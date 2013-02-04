@@ -1,0 +1,20 @@
+/.cvsignore/1.2/Fri Sep 24 22:00:02 2004//
+/Builder.py/1.7/Fri Mar 19 10:32:10 2010//
+/Sources.pp/1.1/Thu Jun  3 21:11:25 2004//
+/__init__.py/1.1/Tue Jun  1 19:31:51 2004//
+/archive.py/1.5/Fri Mar 17 23:50:28 2006//
+/archive_rt.py/1.5/Fri Mar 17 23:50:56 2006//
+/archivebuilder.py/1.3/Wed Dec 21 04:23:52 2005//
+/bindepend.py/1.3/Fri Mar 17 23:51:20 2006//
+/carchive.py/1.4/Fri Mar 19 10:32:10 2010//
+/carchive_rt.py/1.4/Fri Mar 19 10:32:10 2010//
+/finder.py/1.2/Thu Apr 28 16:56:51 2005//
+/icon.py/1.2/Thu Apr 28 16:56:51 2005//
+/imputil.py/1.4/Fri Jan 27 02:58:07 2006//
+/installutils.py/1.2/Thu Apr 28 16:56:51 2005//
+/ltoc.py/1.3/Fri Mar 19 10:32:10 2010//
+/mkarchive.py/1.4/Fri Mar 17 23:51:39 2006//
+/modulefinder.py/1.3/Fri Mar 19 10:32:10 2010//
+/resource.py/1.4/Fri Mar 19 10:32:10 2010//
+/tocfilter.py/1.2/Thu Apr 28 16:56:51 2005//
+D

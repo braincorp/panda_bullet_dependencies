@@ -1,0 +1,22 @@
+/.cvsignore/1.1/Wed Oct 13 23:17:36 2004//
+/Sources.pp/1.5/Tue Dec  6 02:39:36 2011//
+/p3xfileegg_composite1.cxx/1.1/Tue Dec  6 02:39:36 2011//
+/xFileAnimationSet.I/1.2/Wed May 28 18:38:42 2008//
+/xFileAnimationSet.cxx/1.9/Thu Feb 26 00:34:07 2009//
+/xFileAnimationSet.h/1.6/Tue Dec 20 20:26:09 2011//
+/xFileFace.cxx/1.2/Wed May 28 18:38:42 2008//
+/xFileFace.h/1.2/Wed May 28 18:38:42 2008//
+/xFileMaker.cxx/1.9/Wed May 28 18:38:42 2008//
+/xFileMaker.h/1.5/Wed May 28 18:38:42 2008//
+/xFileMaterial.cxx/1.8/Mon Oct 10 05:25:23 2011//
+/xFileMaterial.h/1.5/Mon Oct 10 05:25:23 2011//
+/xFileMesh.cxx/1.9/Tue Oct 11 00:45:55 2011//
+/xFileMesh.h/1.6/Tue Dec 20 20:26:09 2011//
+/xFileNormal.cxx/1.4/Tue Oct 11 00:45:55 2011//
+/xFileNormal.h/1.4/Tue Oct 11 00:45:55 2011//
+/xFileToEggConverter.cxx/1.12/Thu Feb 26 00:34:08 2009//
+/xFileToEggConverter.h/1.7/Thu Feb 26 00:34:08 2009//
+/xFileVertex.cxx/1.6/Tue Oct 11 00:45:55 2011//
+/xFileVertex.h/1.5/Tue Oct 11 00:45:55 2011//
+/xFileVertexPool.h/1.3/Mon Oct 10 05:25:23 2011//
+D

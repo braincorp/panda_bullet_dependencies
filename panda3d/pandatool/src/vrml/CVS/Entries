@@ -1,0 +1,21 @@
+/.cvsignore/1.1/Wed Oct 13 23:17:35 2004//
+/Sources.pp/1.3/Tue Dec  6 02:39:36 2011//
+/parse_vrml.cxx/1.4/Wed May 28 18:38:41 2008//
+/parse_vrml.h/1.2/Wed May 28 18:38:41 2008//
+/standardNodes.wrl/1.1/Fri Oct  1 23:20:10 2004//
+/standardNodes.wrl.c/1.2/Wed Dec  1 18:33:59 2004//
+/standardNodes.wrl.pz.c/1.2/Wed Dec  1 18:33:59 2004//
+/standard_nodes.cxx/1.2/Wed May 28 18:38:41 2008//
+/standard_nodes.h/1.2/Wed May 28 18:38:41 2008//
+/vrmlLexer.cxx.prebuilt/1.7/Tue Mar 22 23:48:32 2011//
+/vrmlLexer.lxx/1.9/Tue Mar 22 23:48:32 2011//
+/vrmlLexerDefs.h/1.2/Wed May 28 18:38:41 2008//
+/vrmlNode.cxx/1.3/Wed May 28 18:38:41 2008//
+/vrmlNode.h/1.2/Wed May 28 18:38:41 2008//
+/vrmlNodeType.cxx/1.4/Mon Mar 20 03:33:17 2006//
+/vrmlNodeType.h/1.2/Fri Jan 13 18:43:46 2006//
+/vrmlParser.cxx.prebuilt/1.6/Tue Mar 22 23:48:32 2011//
+/vrmlParser.h.prebuilt/1.5/Tue Mar 22 23:48:32 2011//
+/vrmlParser.yxx/1.5/Wed May 28 18:38:41 2008//
+/vrmlParserDefs.h/1.2/Wed May 28 18:38:41 2008//
+D

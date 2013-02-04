@@ -1,0 +1,27 @@
+/.cvsignore/1.2/Mon Sep 27 22:46:38 2004//
+/Sources.pp/1.3/Tue Dec  6 02:39:32 2011//
+/config_recorder.cxx/1.5/Wed May 28 18:38:31 2008//
+/config_recorder.h/1.4/Wed May 28 18:38:31 2008//
+/mouseRecorder.cxx/1.5/Mon Oct 10 05:25:18 2011//
+/mouseRecorder.h/1.6/Mon Oct 10 05:25:18 2011//
+/p3recorder_composite1.cxx/1.1/Tue Dec  6 02:39:32 2011//
+/p3recorder_composite2.cxx/1.1/Tue Dec  6 02:39:32 2011//
+/recorderBase.I/1.3/Wed May 28 18:38:31 2008//
+/recorderBase.cxx/1.3/Wed May 28 18:38:31 2008//
+/recorderBase.h/1.4/Wed May 28 18:38:31 2008//
+/recorderController.I/1.3/Wed May 28 18:38:31 2008//
+/recorderController.cxx/1.4/Wed May 28 18:38:31 2008//
+/recorderController.h/1.4/Wed May 28 18:38:31 2008//
+/recorderFrame.I/1.3/Wed May 28 18:38:31 2008//
+/recorderFrame.cxx/1.3/Wed May 28 18:38:31 2008//
+/recorderFrame.h/1.5/Wed May 28 18:38:31 2008//
+/recorderHeader.I/1.3/Wed May 28 18:38:31 2008//
+/recorderHeader.cxx/1.3/Wed May 28 18:38:31 2008//
+/recorderHeader.h/1.4/Wed May 28 18:38:31 2008//
+/recorderTable.I/1.3/Wed May 28 18:38:31 2008//
+/recorderTable.cxx/1.4/Wed May 28 18:38:31 2008//
+/recorderTable.h/1.4/Wed May 28 18:38:31 2008//
+/socketStreamRecorder.I/1.3/Wed May 28 18:38:31 2008//
+/socketStreamRecorder.cxx/1.4/Wed May 28 18:38:31 2008//
+/socketStreamRecorder.h/1.6/Wed May 28 18:38:31 2008//
+D

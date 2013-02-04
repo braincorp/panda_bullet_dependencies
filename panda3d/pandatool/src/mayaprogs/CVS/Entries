@@ -1,0 +1,23 @@
+/.cvsignore/1.1/Fri Sep 24 01:04:45 2004//
+/Sources.pp/1.39/Thu Feb  2 17:45:48 2012//
+/blend_test.cxx/1.1/Thu Dec 16 19:26:20 2004//
+/config_mayaloader.cxx/1.5/Wed May 28 18:38:39 2008//
+/eggImportOptions.mel/1.2/Fri Sep  1 18:52:53 2006//
+/eggToMaya.cxx/1.8/Fri Mar 13 22:01:53 2009//
+/eggToMaya.h/1.4/Wed May 28 18:38:39 2008//
+/mayaCopy.cxx/1.42/Wed Nov 16 00:20:10 2011//
+/mayaCopy.h/1.15/Mon Nov  9 22:49:09 2009//
+/mayaEggImport.cxx/1.6/Wed May 28 18:38:39 2008//
+/mayaPview.cxx/1.21/Mon Oct 10 05:25:23 2011//
+/mayaPview.h/1.4/Wed May 28 18:38:39 2008//
+/mayaSavePview.cxx/1.9/Wed May 28 18:38:39 2008//
+/mayaSavePview.h/1.10/Fri Aug 21 15:40:44 2009//
+/mayaToEgg.cxx/1.36/Tue Nov  1 23:44:38 2011//
+/mayaToEgg.h/1.18/Tue Nov  1 23:44:38 2011//
+/mayaToEgg_client.cxx/1.6/Thu Dec 10 23:14:14 2009//
+/mayaToEgg_client.h/1.4/Thu Nov 19 02:41:59 2009//
+/mayaToEgg_server.cxx/1.14/Tue Nov  1 23:44:38 2011//
+/mayaToEgg_server.h/1.5/Tue Nov  1 23:44:38 2011//
+/mayapath.cxx/1.15/Fri Sep 28 09:38:15 2012//
+/normal_test.cxx/1.1/Tue Oct 17 00:24:06 2006//
+D

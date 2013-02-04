@@ -1,0 +1,24 @@
+/.cvsignore/1.1/Tue Nov 17 18:50:05 2009//
+/Sources.pp/1.11/Tue Dec  6 02:39:32 2011//
+/arToolKit.I/1.1/Sun Nov  8 12:56:45 2009//
+/arToolKit.cxx/1.5/Sat Jan 19 19:32:51 2013//
+/arToolKit.h/1.1/Sun Nov  8 12:56:45 2009//
+/config_vision.cxx/1.5/Wed Oct 20 20:34:18 2010//
+/config_vision.h/1.1/Sun Nov  8 12:56:45 2009//
+/openCVTexture.I/1.2/Wed Oct 20 16:28:26 2010//
+/openCVTexture.cxx/1.7/Tue Dec 20 20:13:29 2011//
+/openCVTexture.h/1.5/Sun Jul  8 20:04:34 2012//
+/p3vision_composite1.cxx/1.1/Tue Dec  6 02:39:32 2011//
+/webcamVideo.I/1.2/Wed Jun 23 08:51:53 2010//
+/webcamVideo.cxx/1.5/Fri Oct 22 13:49:35 2010//
+/webcamVideo.h/1.2/Wed Jun 23 08:51:53 2010//
+/webcamVideoCursorOpenCV.cxx/1.4/Tue Dec 20 20:13:29 2011//
+/webcamVideoCursorOpenCV.h/1.4/Tue Dec 20 20:13:29 2011//
+/webcamVideoCursorV4L.cxx/1.13/Tue Nov 15 22:34:44 2011//
+/webcamVideoCursorV4L.h/1.7/Tue Nov 15 22:34:44 2011//
+/webcamVideoDS.cxx/1.7/Wed Nov 16 03:55:31 2011//
+/webcamVideoOpenCV.cxx/1.1/Wed Oct 20 20:34:18 2010//
+/webcamVideoOpenCV.h/1.1/Wed Oct 20 20:34:18 2010//
+/webcamVideoV4L.cxx/1.6/Tue May 24 14:08:55 2011//
+/webcamVideoV4L.h/1.3/Sun Aug 29 17:53:31 2010//
+D

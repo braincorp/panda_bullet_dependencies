@@ -1,0 +1,26 @@
+/.cvsignore/1.1/Fri Sep 24 01:04:01 2004//
+/Sources.pp/1.15/Tue Dec  6 02:39:34 2011//
+/eggBase.cxx/1.22/Tue Dec 14 22:18:11 2010//
+/eggBase.h/1.15/Tue Dec 14 22:18:11 2010//
+/eggConverter.cxx/1.6/Wed May 28 18:38:36 2008//
+/eggConverter.h/1.7/Wed May 28 18:38:36 2008//
+/eggFilter.cxx/1.11/Wed May 28 18:38:36 2008//
+/eggFilter.h/1.8/Wed May 28 18:38:36 2008//
+/eggMakeSomething.cxx/1.3/Wed May 28 18:38:36 2008//
+/eggMakeSomething.h/1.3/Wed May 28 18:38:36 2008//
+/eggMultiBase.cxx/1.18/Tue Dec 14 22:18:11 2010//
+/eggMultiBase.h/1.10/Wed May 28 18:38:36 2008//
+/eggMultiFilter.cxx/1.18/Wed Jan 20 01:28:58 2010//
+/eggMultiFilter.h/1.10/Wed Jan 20 01:28:58 2010//
+/eggReader.cxx/1.24/Tue Nov  4 18:25:32 2008//
+/eggReader.h/1.12/Wed May 28 18:38:36 2008//
+/eggSingleBase.cxx/1.4/Wed May 28 18:38:36 2008//
+/eggSingleBase.h/1.4/Wed May 28 18:38:36 2008//
+/eggToSomething.cxx/1.8/Fri Mar 13 22:01:53 2009//
+/eggToSomething.h/1.7/Wed May 28 18:38:36 2008//
+/eggWriter.cxx/1.29/Tue Dec 14 22:18:11 2010//
+/eggWriter.h/1.12/Wed May 28 18:38:36 2008//
+/p3eggbase_composite1.cxx/1.1/Tue Dec  6 02:39:34 2011//
+/somethingToEgg.cxx/1.32/Tue Jul 20 23:12:19 2010//
+/somethingToEgg.h/1.18/Wed May 28 18:38:36 2008//
+D
