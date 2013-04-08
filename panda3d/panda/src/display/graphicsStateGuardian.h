@@ -75,14 +75,14 @@ public:
 
 PUBLISHED:
 
-  enum ShaderModel
-  {
+  enum ShaderModel {
     SM_00,
     SM_11,
     SM_20,
     SM_2X,
     SM_30,
     SM_40,
+    SM_50,
   };
 
   INLINE void release_all();
@@ -300,9 +300,9 @@ public:
   INLINE int get_current_tex_view_offset() const;
   INLINE const Lens *get_current_lens() const;
 
-  virtual const TransformState *get_cs_transform_for(CoordinateSystem cs) const;
-  virtual const TransformState *get_cs_transform() const;
-  INLINE const TransformState *get_inv_cs_transform() const;
+  virtual CPT(TransformState) get_cs_transform_for(CoordinateSystem cs) const;
+  virtual CPT(TransformState) get_cs_transform() const;
+  INLINE CPT(TransformState) get_inv_cs_transform() const;
 
   void do_issue_clip_plane();
   void do_issue_color();

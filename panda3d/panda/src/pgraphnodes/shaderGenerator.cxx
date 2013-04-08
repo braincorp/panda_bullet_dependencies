@@ -662,6 +662,10 @@ synthesize_shader(const RenderState *rs) {
 
   text << "//Cg\n";
 
+  text << "/* Generated shader for render state " << rs << ":\n";
+  rs->write(text, 2);
+  text << "*/\n";
+
   text << "void vshader(\n";
   const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
   const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, rs->get_attrib_def(TexGenAttrib::get_class_slot()));
@@ -1015,11 +1019,11 @@ synthesize_shader(const RenderState *rs) {
       text << "\t l_eye_normal.xyz *= tsnormal.z;\n";
       text << "\t l_eye_normal.xyz += l_tangent * tsnormal.x;\n";
       text << "\t l_eye_normal.xyz += l_binormal * tsnormal.y;\n";
-      text << "\t l_eye_normal.xyz  = normalize(l_eye_normal.xyz);\n";
-    } else {
-      text << "\t // Correct the surface normal for interpolation effects\n";
-      text << "\t l_eye_normal.xyz = normalize(l_eye_normal.xyz);\n";
     }
+  }
+  if (_need_eye_normal) {
+    text << "\t // Correct the surface normal for interpolation effects\n";
+    text << "\t l_eye_normal.xyz = normalize(l_eye_normal.xyz);\n";
   }
   if (_out_aux_normal) {
     text << "\t // Output the camera-space surface normal\n";
@@ -1346,15 +1350,31 @@ synthesize_shader(const RenderState *rs) {
     text << "\t // Shader includes alpha test:\n";
     double ref = alpha_test->get_reference_alpha();
     switch (alpha_test->get_mode()) {
-    case RenderAttrib::M_never:          text<<"\t discard;\n";
-    case RenderAttrib::M_less:           text<<"\t if (result.a >= "<<ref<<") discard;\n";
-    case RenderAttrib::M_equal:          text<<"\t if (result.a != "<<ref<<") discard;\n";
-    case RenderAttrib::M_less_equal:     text<<"\t if (result.a >  "<<ref<<") discard;\n";
-    case RenderAttrib::M_greater:        text<<"\t if (result.a <= "<<ref<<") discard;\n";
-    case RenderAttrib::M_not_equal:      text<<"\t if (result.a == "<<ref<<") discard;\n";
-    case RenderAttrib::M_greater_equal:  text<<"\t if (result.a <  "<<ref<<") discard;\n";
-    case RenderAttrib::M_none: break;
-    case RenderAttrib::M_always: break;
+    case RenderAttrib::M_never:
+      text << "\t discard;\n";
+      break;
+    case RenderAttrib::M_less:
+      text << "\t if (result.a >= " << ref << ") discard;\n";
+      break;
+    case RenderAttrib::M_equal:
+      text << "\t if (result.a != " << ref << ") discard;\n";
+      break;
+    case RenderAttrib::M_less_equal:
+      text << "\t if (result.a > " << ref << ") discard;\n";
+      break;
+    case RenderAttrib::M_greater:
+      text << "\t if (result.a <= " << ref << ") discard;\n";
+      break;
+    case RenderAttrib::M_not_equal:
+      text << "\t if (result.a == " << ref << ") discard;\n";
+      break;
+    case RenderAttrib::M_greater_equal:
+      text << "\t if (result.a < " << ref << ") discard;\n";
+      break;
+    case RenderAttrib::M_none:
+    case RenderAttrib::M_always:
+    default:
+      break;
     }
   }
 

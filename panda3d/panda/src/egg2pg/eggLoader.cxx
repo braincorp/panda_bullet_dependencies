@@ -79,6 +79,7 @@
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
 #include "collisionFloorMesh.h"
+#include "collisionBox.h"
 #include "parametricCurve.h"
 #include "nurbsCurve.h"
 #include "nurbsCurveInterface.h"
@@ -2843,6 +2844,66 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_box
+//       Access: Private
+//  Description: Creates a single generic Box corresponding
+//               to the polygons associated with this group.
+//               This box is used by make_collision_box.
+////////////////////////////////////////////////////////////////////
+bool EggLoader::
+make_box(EggGroup *egg_group, EggGroup::CollideFlags flags, 
+            LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
+  bool success = false;
+  EggGroup *geom_group = find_collision_geometry(egg_group, flags);
+  if (geom_group != (EggGroup *)NULL) {
+    // Collect all of the vertices.
+    pset<EggVertex *> vertices;
+
+    EggGroup::const_iterator ci;
+    for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
+      if ((*ci)->is_of_type(EggPrimitive::get_class_type())) {
+        EggPrimitive *prim = DCAST(EggPrimitive, *ci);
+        EggPrimitive::const_iterator pi;
+        for (pi = prim->begin(); pi != prim->end(); ++pi) {
+          vertices.insert(*pi);
+        }
+      }
+    }
+
+    // Now find the min/max points
+    int num_vertices = 0;
+    bool first = true;
+    pset<EggVertex *>::const_iterator vi;
+    for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
+      EggVertex *vtx = (*vi);
+      LVertex pos = LCAST(PN_stdfloat, vtx->get_pos3());
+
+      if (first) {
+        min_p.set(pos[0], pos[1], pos[2]);
+        max_p.set(pos[0], pos[1], pos[2]);
+        first = false;
+      } else {
+        min_p.set(min(min_p[0], pos[0]),
+                  min(min_p[1], pos[1]),
+                  min(min_p[2], pos[2]));
+        max_p.set(max(max_p[0], pos[0]),
+                  max(max_p[1], pos[1]),
+                  max(max_p[2], pos[2]));
+      }
+      num_vertices++;
+    }
+
+    if (num_vertices > 1) {
+      vi = vertices.begin();
+      EggVertex *clr_vtx = (*vi);
+      color = clr_vtx->get_color();
+      success = true;
+    }
+  }
+  return success;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_collision_solids
 //       Access: Private
 //  Description: Creates CollisionSolids corresponding to the
@@ -2875,6 +2936,10 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
 
   case EggGroup::CST_sphere:
     make_collision_sphere(egg_group, cnode, start_group->get_collide_flags());
+    break;
+
+  case EggGroup::CST_box:
+    make_collision_box(egg_group, cnode, start_group->get_collide_flags());
     break;
 
   case EggGroup::CST_inv_sphere:
@@ -3028,6 +3093,26 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
       new CollisionSphere(center, radius);
     apply_collision_flags(cssphere, flags);
     cnode->add_solid(cssphere);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_collision_box
+//       Access: Private
+//  Description: Creates a single CollisionBox corresponding
+//               to the polygons associated with this group.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+make_collision_box(EggGroup *egg_group, CollisionNode *cnode,
+                   EggGroup::CollideFlags flags) {
+  LPoint3 min_p;
+  LPoint3 max_p;
+  LColor dummycolor;
+  if (make_box(egg_group, flags, min_p, max_p, dummycolor)) {
+    CollisionBox *csbox =
+      new CollisionBox(min_p, max_p);
+    apply_collision_flags(csbox, flags);
+    cnode->add_solid(csbox);
   }
 }
 

@@ -23,6 +23,10 @@
 
 #if defined(WIN32_VC) || defined(WIN64_VC)
 #include <winsock2.h>  // For gethostname()
+#include <Iphlpapi.h> // For GetAdaptersAddresses()
+#else
+#include <net/if.h>
+#include <ifaddrs.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +37,7 @@
 ConnectionManager::
 ConnectionManager() : _set_mutex("ConnectionManager::_set_mutex") 
 {
+  _interfaces_scanned = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,21 +73,67 @@ ConnectionManager::
 ////////////////////////////////////////////////////////////////////
 PT(Connection) ConnectionManager::
 open_UDP_connection(int port) {
+  return open_UDP_connection("", port);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::open_UDP_connection
+//       Access: Published
+//  Description: Opens a socket for sending and/or receiving UDP
+//               packets.  If the port number is greater than zero,
+//               the UDP connection will be opened for listening on
+//               the indicated port; otherwise, it will be useful only
+//               for sending.
+//
+//               This variant accepts both a hostname and port to
+//               listen on a particular interface; if the hostname is
+//               empty, all interfaces will be available.
+//
+//               If for_broadcast is true, this UDP connection will be
+//               configured to send and/or receive messages on the
+//               broadcast address (255.255.255.255); otherwise, these
+//               messages may be automatically filtered by the OS.
+//
+//               Use a ConnectionReader and ConnectionWriter to handle
+//               the actual communication.
+////////////////////////////////////////////////////////////////////
+PT(Connection) ConnectionManager::
+open_UDP_connection(const string &hostname, int port, bool for_broadcast) {
   Socket_UDP *socket = new Socket_UDP;
 
   if (port > 0) {
     NetAddress address;
-    address.set_any(port);
+    if (hostname.empty()) {
+      address.set_any(port);
+    } else {
+      address.set_host(hostname, port);
+    }
     
     if (!socket->OpenForInput(address.get_addr())) {
-      net_cat.error()
-        << "Unable to bind to port " << port << " for UDP.\n";
+      if (hostname.empty()) {
+        net_cat.error()
+          << "Unable to bind to port " << port << " for UDP.\n";
+      } else {
+        net_cat.error()
+          << "Unable to bind to " << hostname << ":" << port << " for UDP.\n";
+      }        
       delete socket;
       return PT(Connection)();
     }
 
-    net_cat.info()
-      << "Creating UDP connection for port " << port << "\n";
+    const char *broadcast_note = "";
+    if (for_broadcast) {
+      socket->SetToBroadCast();
+      broadcast_note = "broadcast ";
+    }
+
+    if (hostname.empty()) {
+      net_cat.info()
+        << "Creating UDP " << broadcast_note << "connection for port " << port << "\n";
+    } else {
+      net_cat.info()
+        << "Creating UDP " << broadcast_note << "connection for " << hostname << ":" << port << "\n";
+    }
 
   } else {
     if (!socket->InitNoAddress()) {
@@ -92,8 +143,14 @@ open_UDP_connection(int port) {
       return PT(Connection)();
     }
 
+    const char *broadcast_note = "";
+    if (for_broadcast) {
+      socket->SetToBroadCast();
+      broadcast_note = "broadcast ";
+    }
+
     net_cat.info()
-      << "Creating outgoing UDP connection\n";
+      << "Creating outgoing UDP " << broadcast_note << "connection\n";
   }
 
   PT(Connection) connection = new Connection(this, socket);
@@ -259,7 +316,7 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
 #endif  // SIMPLE_THREADS
 
   net_cat.info()
-    << "Opened TCP connection to server " << address.get_ip_string() << " "
+    << "Opened TCP connection to server " << address.get_ip_string()
     << " on port " << address.get_port() << "\n";
 
   PT(Connection) connection = new Connection(this, socket);
@@ -453,6 +510,152 @@ get_host_name() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::scan_interfaces
+//       Access: Published
+//  Description: Repopulates the list reported by
+//               get_num_interface()/get_interface().  It is not
+//               necessary to call this explicitly, unless you want to
+//               re-determine the connected interfaces (for instance,
+//               if you suspect the hardware has recently changed).
+////////////////////////////////////////////////////////////////////
+void ConnectionManager::
+scan_interfaces() {
+  LightMutexHolder holder(_set_mutex);
+  _interfaces.clear();
+  _interfaces_scanned = true;
+
+#ifdef WIN32_VC
+  int flags = GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_SKIP_UNICAST | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
+  ULONG buffer_size = 0;
+  ULONG result = GetAdaptersAddresses(AF_INET, flags, NULL, NULL, &buffer_size);
+  if (result == ERROR_BUFFER_OVERFLOW) {
+    IP_ADAPTER_ADDRESSES *addresses = (IP_ADAPTER_ADDRESSES *)PANDA_MALLOC_ARRAY(buffer_size);
+    result = GetAdaptersAddresses(AF_INET, flags, NULL, addresses, &buffer_size);
+    if (result == ERROR_SUCCESS) {
+      IP_ADAPTER_ADDRESSES *p = addresses;
+      while (p != NULL) {
+        // p->AdapterName appears to be a GUID.  Not sure if this is
+        // actually useful to anyone; we'll store the "friendly name"
+        // instead.
+        TextEncoder encoder;
+        encoder.set_wtext(wstring(p->FriendlyName));
+        string friendly_name = encoder.get_text();
+        
+        Interface interface;
+        interface.set_name(friendly_name);
+
+        if (p->PhysicalAddressLength > 0) {
+          interface.set_mac_address(format_mac_address((const unsigned char *)p->PhysicalAddress, p->PhysicalAddressLength));
+        }
+        
+        if (p->OperStatus == IfOperStatusUp) {
+          // Prefixes are a linked list, in the order Network IP,
+          // Adapter IP, Broadcast IP (plus more).
+          NetAddress addresses[3];
+          IP_ADAPTER_PREFIX *m = p->FirstPrefix;
+          int mc = 0;
+          while (m != NULL && mc < 3) {
+            addresses[mc] = NetAddress(Socket_Address(*(sockaddr_in *)m->Address.lpSockaddr));
+            m = m->Next;
+            ++mc;
+          }
+
+          if (mc > 1) {
+            interface.set_ip(addresses[1]);
+          }
+
+          if (mc > 2) {
+            interface.set_broadcast(addresses[2]);
+
+            // Now, we can infer the netmask by the difference between the
+            // network address (the first address) and the broadcast
+            // address (the last address).
+            PN_uint32 netmask = addresses[0].get_ip() - addresses[2].get_ip() - 1;
+            Socket_Address sa;
+            sa.set_host(netmask, 0);
+            interface.set_netmask(NetAddress(sa));
+          }
+        }
+
+        _interfaces.push_back(interface);
+        p = p->Next;
+      }
+    }
+    PANDA_FREE_ARRAY(addresses);
+  }
+
+#else  // WIN32_VC
+  struct ifaddrs *ifa;
+  if (getifaddrs(&ifa) != 0) {
+    // Failure.
+    net_cat.error()
+      << "Failed to call getifaddrs\n";
+    return;
+  }
+
+  struct ifaddrs *p = ifa;
+  while (p != NULL) {
+    if (p->ifa_addr->sa_family == AF_INET) {
+      Interface interface;
+      interface.set_name(p->ifa_name);
+      if (p->ifa_addr != NULL) {
+        interface.set_ip(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_addr)));
+      }
+      if (p->ifa_netmask != NULL) {
+        interface.set_netmask(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_netmask)));
+      }
+      if ((p->ifa_flags & IFF_BROADCAST) && p->ifa_broadaddr != NULL) {
+        interface.set_broadcast(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_broadaddr)));
+      } else if ((p->ifa_flags & IFF_POINTOPOINT) && p->ifa_dstaddr != NULL) {
+        interface.set_p2p(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_dstaddr)));
+      }
+      _interfaces.push_back(interface);
+    }
+
+    p = p->ifa_next;
+  }
+
+  freeifaddrs(ifa);
+
+#endif // WIN32_VC
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::get_num_interfaces
+//       Access: Published
+//  Description: This returns the number of usable network interfaces
+//               detected on this machine.  (Currently, only IPv4
+//               interfaces are reported.)  See scan_interfaces() to
+//               repopulate this list.
+////////////////////////////////////////////////////////////////////
+int ConnectionManager::
+get_num_interfaces() {
+  if (!_interfaces_scanned) {
+    scan_interfaces();
+  }
+  LightMutexHolder holder(_set_mutex);
+  return _interfaces.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::get_interface
+//       Access: Published
+//  Description: Returns the nth usable network interface detected on
+//               this machine.  (Currently, only IPv4 interfaces are
+//               reported.)  See scan_interfaces() to repopulate this
+//               list.
+////////////////////////////////////////////////////////////////////
+const ConnectionManager::Interface &ConnectionManager::
+get_interface(int n) {
+  if (!_interfaces_scanned) {
+    scan_interfaces();
+  }
+  LightMutexHolder holder(_set_mutex);
+  nassertr(n >= 0 && n < (int)_interfaces.size(), _interfaces[0]);
+  return _interfaces[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::new_connection
 //       Access: Protected
 //  Description: This internal function is called whenever a new
@@ -576,4 +779,45 @@ void ConnectionManager::
 remove_writer(ConnectionWriter *writer) {
   LightMutexHolder holder(_set_mutex);
   _writers.erase(writer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::format_mac_address
+//       Access: Protected
+//  Description: Formats a device's MAC address into a string.
+////////////////////////////////////////////////////////////////////
+string ConnectionManager::
+format_mac_address(const unsigned char *data, int data_size) {
+  stringstream strm;
+  for (int di = 0; di < data_size; ++di) {
+    if (di != 0) {
+      strm << "-";
+    }
+    strm << hex << setw(2) << setfill('0') << (unsigned int)data[di];
+  }
+
+  return strm.str();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::Interface::Output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ConnectionManager::Interface::
+output(ostream &out) const {
+  out << get_name() << " [";
+  if (has_ip()) {
+    out << " " << get_ip();
+  }
+  if (has_netmask()) {
+    out << " netmask " << get_netmask();
+  }
+  if (has_broadcast()) {
+    out << " broadcast " << get_broadcast();
+  }
+  if (has_p2p()) {
+    out << " p2p " << get_p2p();
+  }
+  out << " ]";
 }

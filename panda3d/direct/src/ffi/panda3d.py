@@ -68,7 +68,7 @@ class panda3d_import_manager:
                     target = dir
                     break
         if target == None:
-            raise ImportError, "Cannot find %s" % (filename)
+            raise ImportError("Cannot find %s" % (filename))
         target = cls.os.path.abspath(target)
 
         # And add that directory to the system library path.
@@ -110,8 +110,10 @@ class panda3d_import_manager:
         # Try to import it normally first.
         try:
             return __import__(name)
-        except ImportError, err:
-            if str(err) != "No module named " + name:
+        except ImportError:
+            _, err, _ = cls.sys.exc_info()
+            if str(err) != "No module named " + name and \
+               str(err) != "No module named '%s'" % name:
                 raise
 
         # Hm, importing normally didn't work. Let's try imp.load_dynamic.
@@ -130,7 +132,7 @@ class panda3d_import_manager:
                 break
         if target == None:
             message = "DLL loader cannot find %s." % name
-            raise ImportError, message
+            raise ImportError(message)
         target = cls.os.path.abspath(target)
 
         # Now import the file explicitly.
@@ -158,7 +160,7 @@ class panda3d_submodule(type(sys)):
         mod = self.__manager__.libimport(self.__library__)
         if name == "__all__":
             everything = []
-            for obj in dir(mod):
+            for obj in mod.__dict__.keys():
                 if not obj.startswith("__"):
                     everything.append(obj)
             self.__all__ = everything
@@ -167,13 +169,13 @@ class panda3d_submodule(type(sys)):
             return self.__library__
         elif name == "__libraries__":
             return self.__libraries__
-        elif name in dir(mod):
+        elif name in mod.__dict__.keys():
             value = mod.__dict__[name]
             setattr(self, name, value)
             return value
 
         # Not found? Raise the error that Python would normally raise.
-        raise AttributeError, "'module' object has no attribute '%s'" % name
+        raise AttributeError("'module' object has no attribute '%s'" % name)
 
 class panda3d_multisubmodule(type(sys)):
     """ Represents a submodule of 'panda3d' that represents multiple
@@ -192,16 +194,17 @@ class panda3d_multisubmodule(type(sys)):
         for lib in self.__libraries__:
             try:
                 self.__manager__.libimport(lib)
-            except ImportError, msg:
+            except ImportError:
+                _, msg, _ = self.__manager__.sys.exc_info()
                 err.append(str(msg).rstrip('.'))
         if len(err) > 0:
-            raise ImportError, ', '.join(err)
+            raise ImportError(', '.join(err))
 
     def __getattr__(self, name):
         if name == "__all__":
             everything = []
             for lib in self.__libraries__:
-                for obj in dir(self.__manager__.libimport(lib)):
+                for obj in self.__manager__.libimport(lib).__dict__:
                     if not obj.startswith("__"):
                         everything.append(obj)
             self.__all__ = everything
@@ -211,13 +214,13 @@ class panda3d_multisubmodule(type(sys)):
 
         for lib in self.__libraries__:
             mod = self.__manager__.libimport(lib)
-            if name in dir(mod):
+            if name in mod.__dict__:
                 value = mod.__dict__[name]
                 setattr(self, name, value)
                 return value
 
         # Not found? Raise the error that Python would normally raise.
-        raise AttributeError, "'module' object has no attribute '%s'" % name
+        raise AttributeError("'module' object has no attribute '%s'" % name)
 
 class panda3d_module(type(sys)):
     """ Represents the main 'panda3d' module. """
@@ -232,10 +235,11 @@ class panda3d_module(type(sys)):
         for module in self.modules:
             try:
                 self.__manager__.sys.modules["panda3d.%s" % module].__load__()
-            except ImportError, msg:
+            except ImportError:
+                _, msg, _ = self.__manager__.sys.exc_info()
                 err.append(str(msg).rstrip('.'))
         if len(err) > 0:
-            raise ImportError, ', '.join(err)
+            raise ImportError(', '.join(err))
 
 
     def __getattr__(self, name):
@@ -250,7 +254,7 @@ class panda3d_module(type(sys)):
             return value
 
         # Not found? Raise the error that Python would normally raise.
-        raise AttributeError, "'module' object has no attribute '%s'" % name
+        raise AttributeError("'module' object has no attribute '%s'" % name)
 
 # Create the fake module objects and insert them into sys.modules.
 this = panda3d_module("panda3d")

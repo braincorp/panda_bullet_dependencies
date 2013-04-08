@@ -65,6 +65,7 @@ extern "C" {
   EXPCL_PYSTUB int PyList_Type(...);
   EXPCL_PYSTUB int PyLong_AsLong(...);
   EXPCL_PYSTUB int PyLong_AsLongLong(...);
+  EXPCL_PYSTUB int PyLong_AsSsize_t(...);
   EXPCL_PYSTUB int PyLong_AsUnsignedLong(...);
   EXPCL_PYSTUB int PyLong_AsUnsignedLongLong(...);
   EXPCL_PYSTUB int PyLong_FromLong(...);
@@ -93,6 +94,7 @@ extern "C" {
   EXPCL_PYSTUB int PyObject_IsInstance(...);
   EXPCL_PYSTUB int PyObject_IsTrue(...);
   EXPCL_PYSTUB int PyObject_Repr(...);
+  EXPCL_PYSTUB int PyObject_RichCompareBool(...);
   EXPCL_PYSTUB int PyObject_SetAttrString(...);
   EXPCL_PYSTUB int PyObject_Str(...);
   EXPCL_PYSTUB int PyObject_Type(...);
@@ -121,9 +123,11 @@ extern "C" {
   EXPCL_PYSTUB int PyType_GenericAlloc(...);
   EXPCL_PYSTUB int PyType_IsSubtype(...);
   EXPCL_PYSTUB int PyType_Ready(...);
+  EXPCL_PYSTUB int PyUnicodeUCS2_FromStringAndSize(...);
   EXPCL_PYSTUB int PyUnicodeUCS2_FromWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS2_AsWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS2_GetSize(...);
+  EXPCL_PYSTUB int PyUnicodeUCS4_FromStringAndSize(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_FromWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_AsWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_GetSize(...);
@@ -142,6 +146,7 @@ extern "C" {
 
   EXPCL_PYSTUB extern void *PyExc_AssertionError;
   EXPCL_PYSTUB extern void *PyExc_AttributeError;
+  EXPCL_PYSTUB extern void *PyExc_Exception;
   EXPCL_PYSTUB extern void *PyExc_FutureWarning;
   EXPCL_PYSTUB extern void *PyExc_IndexError;
   EXPCL_PYSTUB extern void *PyExc_RuntimeError;
@@ -205,6 +210,7 @@ int PyList_SetItem(...) { return 0; }
 int PyList_Type(...) { return 0; }
 int PyLong_AsLong(...) { return 0; }
 int PyLong_AsLongLong(...) { return 0; }
+int PyLong_AsSsize_t(...) { return 0; }
 int PyLong_AsUnsignedLong(...) { return 0; }
 int PyLong_AsUnsignedLongLong(...) { return 0; }
 int PyLong_FromLong(...) { return 0; }
@@ -233,6 +239,7 @@ int PyObject_HasAttrString(...) { return 0; }
 int PyObject_IsInstance(...) { return 0; }
 int PyObject_IsTrue(...) { return 0; }
 int PyObject_Repr(...) { return 0; }
+int PyObject_RichCompareBool(...) { return 0; }
 int PyObject_SetAttrString(...) { return 0; }
 int PyObject_Str(...) { return 0; }
 int PyObject_Type(...) { return 0; }
@@ -261,9 +268,11 @@ int PyTuple_Type(...) { return 0; };
 int PyType_GenericAlloc(...) { return 0; };
 int PyType_IsSubtype(...) { return 0; }
 int PyType_Ready(...) { return 0; };
+int PyUnicodeUCS2_FromStringAndSize(...) { return 0; }
 int PyUnicodeUCS2_FromWideChar(...) { return 0; }
 int PyUnicodeUCS2_AsWideChar(...) { return 0; }
 int PyUnicodeUCS2_GetSize(...) { return 0; }
+int PyUnicodeUCS4_FromStringAndSize(...) { return 0; }
 int PyUnicodeUCS4_FromWideChar(...) { return 0; }
 int PyUnicodeUCS4_AsWideChar(...) { return 0; }
 int PyUnicodeUCS4_GetSize(...) { return 0; }
@@ -286,6 +295,7 @@ int Py_IsInitialized() {
 
 void *PyExc_AssertionError = (void *)NULL;
 void *PyExc_AttributeError = (void *)NULL;
+void *PyExc_Exception = (void *)NULL;
 void *PyExc_FutureWarning = (void *)NULL;
 void *PyExc_IndexError = (void *)NULL;
 void *PyExc_RuntimeError = (void *)NULL;
