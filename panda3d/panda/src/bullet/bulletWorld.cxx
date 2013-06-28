@@ -609,7 +609,7 @@ remove_vehicle(BulletVehicle *vehicle) {
 //               Please use BulletWorld::attach
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
-attach_constraint(BulletConstraint *constraint) {
+attach_constraint(BulletConstraint *constraint, bool disableCollisionsBetweenLinkedBodies) {
 
   nassertv(constraint);
 
@@ -619,7 +619,7 @@ attach_constraint(BulletConstraint *constraint) {
 
   if (found == _constraints.end()) {
     _constraints.push_back(constraint);
-    _world->addConstraint(constraint->ptr());
+    _world->addConstraint(constraint->ptr(), disableCollisionsBetweenLinkedBodies);
   }
   else {
     bullet_cat.warning() << "constraint already attached" << endl;
