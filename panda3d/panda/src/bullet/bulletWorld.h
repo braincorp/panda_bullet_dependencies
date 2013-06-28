@@ -170,7 +170,7 @@ PUBLISHED: // Deprecated methods, will become private soon
   void attach_character(BulletBaseCharacterControllerNode *node);
   void remove_character(BulletBaseCharacterControllerNode *node);
 
-  void attach_constraint(BulletConstraint *constraint);
+  void attach_constraint(BulletConstraint *constraint, bool disableCollisionsBetweenLinkedBodies=false);
   void remove_constraint(BulletConstraint *constraint);
 
 public:
