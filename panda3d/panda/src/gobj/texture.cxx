@@ -1756,7 +1756,14 @@ set_size_padded(int x, int y, int z) {
   if (do_get_auto_texture_scale(cdata) != ATS_none) {
     do_set_x_size(cdata, up_to_power_2(x));
     do_set_y_size(cdata, up_to_power_2(y));
-    do_set_z_size(cdata, up_to_power_2(z));
+
+    if (cdata->_texture_type == TT_3d_texture) {
+      // Only pad 3D textures.  It does not make sense
+      // to do so for cube maps or 2D texture arrays.
+      do_set_z_size(cdata, up_to_power_2(z));
+    } else {
+      do_set_z_size(cdata, z);
+    }
   } else {
     do_set_x_size(cdata, x);
     do_set_y_size(cdata, y);
@@ -5013,7 +5020,7 @@ do_set_component_type(CData *cdata, Texture::ComponentType component_type) {
     break;
 
   case T_unsigned_int_24_8:
-    //FIXME: I have no idea...
+    cdata->_component_width = 4;
     break;
   }
 }
@@ -5912,13 +5919,61 @@ convert_from_pfm(PTA_uchar &image, size_t page_size, int z,
   nassertv(idx + page_size <= image.size());
   PN_float32 *p = (PN_float32 *)&image[idx];
 
-  for (int j = y_size-1; j >= 0; j--) {
-    for (int i = 0; i < x_size; i++) {
-      for (int c = 0; c < num_components; ++c) {
-        *p = pfm.get_component(i, j, c);
-        ++p;
+  switch (num_components) {
+  case 1:
+    {
+      for (int j = y_size-1; j >= 0; j--) {
+        for (int i = 0; i < x_size; i++) {
+          p[0] = pfm.get_channel(i, j, 0);
+          ++p;
+        }
       }
     }
+    break;
+
+  case 2:
+    {
+      for (int j = y_size-1; j >= 0; j--) {
+        for (int i = 0; i < x_size; i++) {
+          p[0] = pfm.get_channel(i, j, 0);
+          p[1] = pfm.get_channel(i, j, 1);
+          p += 2;
+        }
+      }
+    }
+    break;
+
+  case 3:
+    {
+      // RGB -> BGR
+      for (int j = y_size-1; j >= 0; j--) {
+        for (int i = 0; i < x_size; i++) {
+          p[0] = pfm.get_channel(i, j, 2);
+          p[1] = pfm.get_channel(i, j, 1);
+          p[2] = pfm.get_channel(i, j, 0);
+          p += 3;
+        }
+      }
+    }
+    break;
+
+  case 4:
+    {
+      // RGBA -> BGRA
+      for (int j = y_size-1; j >= 0; j--) {
+        for (int i = 0; i < x_size; i++) {
+          p[0] = pfm.get_channel(i, j, 2);
+          p[1] = pfm.get_channel(i, j, 1);
+          p[2] = pfm.get_channel(i, j, 0);
+          p[3] = pfm.get_channel(i, j, 3);
+          p += 4;
+        }
+      }
+    }
+    break;
+
+  default:
+    nassertv(false);
   }
 
   nassertv((unsigned char *)p == &image[idx] + page_size);
@@ -6003,13 +6058,53 @@ convert_to_pfm(PfmFile &pfm, int x_size, int y_size,
   nassertr(idx + page_size <= image.size(), false);
   const PN_float32 *p = (const PN_float32 *)&image[idx];
 
-  for (int j = y_size-1; j >= 0; j--) {
-    for (int i = 0; i < x_size; i++) {
-      for (int c = 0; c < num_components; ++c) {
-        pfm.set_component(i, j, c, *p);
+  switch (num_components) {
+  case 1:
+    for (int j = y_size-1; j >= 0; j--) {
+      for (int i = 0; i < x_size; i++) {
+        pfm.set_channel(i, j, 0, p[0]);
         ++p;
       }
     }
+    break;
+
+  case 2:
+    for (int j = y_size-1; j >= 0; j--) {
+      for (int i = 0; i < x_size; i++) {
+        pfm.set_channel(i, j, 0, p[0]);
+        pfm.set_channel(i, j, 1, p[1]);
+        p += 2;
+      }
+    }
+    break;
+
+  case 3:
+    // BGR -> RGB
+    for (int j = y_size-1; j >= 0; j--) {
+      for (int i = 0; i < x_size; i++) {
+        pfm.set_channel(i, j, 2, p[0]);
+        pfm.set_channel(i, j, 1, p[1]);
+        pfm.set_channel(i, j, 0, p[2]);
+        p += 3;
+      }
+    }
+    break;
+
+  case 4:
+    // BGRA -> RGBA
+    for (int j = y_size-1; j >= 0; j--) {
+      for (int i = 0; i < x_size; i++) {
+        pfm.set_channel(i, j, 2, p[0]);
+        pfm.set_channel(i, j, 1, p[1]);
+        pfm.set_channel(i, j, 0, p[2]);
+        pfm.set_channel(i, j, 3, p[3]);
+        p += 4;
+      }
+    }
+    break;
+
+  default:
+    nassertr(false, false);
   }
 
   nassertr((unsigned char *)p == &image[idx] + page_size, false);

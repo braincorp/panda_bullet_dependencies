@@ -111,25 +111,28 @@ filter_row(StoreType dest[], int dest_len,
            double scale,                    //  == dest_len / source_len
            const WorkType filter[],
            double filter_width) {
-  // If we are expanding the row (scale>1.0), we need to look at a fractional
-  // granularity.  Hence, we scale our filter index by scale.  If we are
-  // compressing (scale<1.0), we don't need to fiddle with the filter index, so
-  // we leave it at one.
-  double iscale = max(scale, 1.0);
+  // If we are expanding the row (scale > 1.0), we need to look at a
+  // fractional granularity.  Hence, we scale our filter index by
+  // scale.  If we are compressing (scale < 1.0), we don't need to
+  // fiddle with the filter index, so we leave it at one.
 
-  // Similarly, if we are expanding the row, we want to start the new row at
-  // the far left edge of the original pixel, not in the center.  So we will
-  // have a non-zero offset.
-  int offset = (int)cfloor(iscale*0.5);
+  double iscale;
+  if (scale < 1.0) {
+    iscale = 1.0;
+    filter_width /= scale;
+  } else {
+    iscale = scale;
+  }
 
   for (int dest_x = 0; dest_x < dest_len; dest_x++) {
-    double center = (dest_x - offset) / scale;
+    // The additional offset of 0.5 keeps the pixel centered.
+    double center = (dest_x + 0.5) / scale - 0.5;
 
     // left and right are the starting and ending ranges of the radius of
     // interest of the filter function.  We need to apply the filter to each
     // value in this range.
     int left = max((int)cfloor(center - filter_width), 0);
-    int right = min((int)cceil(center + filter_width), source_len-1);
+    int right = min((int)cceil(center + filter_width), source_len - 1);
 
     // right_center is the point just to the right of the center.  This
     // allows us to flip the sign of the offset when we cross the center point.
@@ -144,13 +147,13 @@ filter_row(StoreType dest[], int dest_len,
     // of center--so we don't have to incur the overhead of calling fabs()
     // each time through the loop.
     for (source_x = left; source_x < right_center; source_x++) {
-      index = (int)(iscale * (center - source_x));
+      index = (int)(iscale * (center - source_x) + 0.5);
       net_value += filter[index] * source[source_x];
       net_weight += filter[index];
     }
 
     for (; source_x <= right; source_x++) {
-      index = (int)(iscale * (source_x - center));
+      index = (int)(iscale * (source_x - center) + 0.5);
       net_value += filter[index] * source[source_x];
       net_weight += filter[index];
     }
@@ -172,25 +175,28 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
                   double scale,                    //  == dest_len / source_len
                   const WorkType filter[],
                   double filter_width) {
-  // If we are expanding the row (scale>1.0), we need to look at a fractional
-  // granularity.  Hence, we scale our filter index by scale.  If we are
-  // compressing (scale<1.0), we don't need to fiddle with the filter index, so
-  // we leave it at one.
-  double iscale = max(scale, 1.0);
+  // If we are expanding the row (scale > 1.0), we need to look at a
+  // fractional granularity.  Hence, we scale our filter index by
+  // scale.  If we are compressing (scale < 1.0), we don't need to
+  // fiddle with the filter index, so we leave it at one.
 
-  // Similarly, if we are expanding the row, we want to start the new row at
-  // the far left edge of the original pixel, not in the center.  So we will
-  // have a non-zero offset.
-  int offset = (int)cfloor(iscale*0.5);
+  double iscale;
+  if (scale < 1.0) {
+    iscale = 1.0;
+    filter_width /= scale;
+  } else {
+    iscale = scale;
+  }
 
   for (int dest_x = 0; dest_x < dest_len; dest_x++) {
-    double center = (dest_x - offset) / scale;
+    // The additional offset of 0.5 keeps the pixel centered.
+    double center = (dest_x + 0.5) / scale - 0.5;
 
     // left and right are the starting and ending ranges of the radius of
     // interest of the filter function.  We need to apply the filter to each
     // value in this range.
     int left = max((int)cfloor(center - filter_width), 0);
-    int right = min((int)cceil(center + filter_width), source_len-1);
+    int right = min((int)cceil(center + filter_width), source_len - 1);
 
     // right_center is the point just to the right of the center.  This
     // allows us to flip the sign of the offset when we cross the center point.
@@ -205,13 +211,13 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
     // of center--so we don't have to incur the overhead of calling fabs()
     // each time through the loop.
     for (source_x = left; source_x < right_center; source_x++) {
-      index = (int)(iscale * (center - source_x));
+      index = (int)(iscale * (center - source_x) + 0.5);
       net_value += filter[index] * source[source_x] * source_weight[source_x];
       net_weight += filter[index] * source_weight[source_x];
     }
 
     for (; source_x <= right; source_x++) {
-      index = (int)(iscale * (source_x - center));
+      index = (int)(iscale * (source_x - center) + 0.5);
       net_value += filter[index] * source[source_x] * source_weight[source_x];
       net_weight += filter[index] * source_weight[source_x];
     }
@@ -257,7 +263,7 @@ box_filter_impl(double scale, double width,
     fscale = scale;
   }
   filter_width = width;
-  int actual_width = (int)cceil((filter_width + 1) * fscale);
+  int actual_width = (int)cceil((filter_width + 1) * fscale) + 1;
 
   filter = (WorkType *)PANDA_MALLOC_ARRAY(actual_width * sizeof(WorkType));
 
@@ -555,8 +561,8 @@ gaussian_filter_from(double width, const PNMImage &copy) {
 #define IMAGETYPE PfmFile
 #define ASIZE get_x_size
 #define BSIZE get_y_size
-#define GETVAL(a, b, channel) get_component(a, b, channel)
-#define SETVAL(a, b, channel, v) set_component(a, b, channel, v)
+#define GETVAL(a, b, channel) get_channel(a, b, channel)
+#define SETVAL(a, b, channel, v) set_channel(a, b, channel, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
@@ -569,8 +575,8 @@ gaussian_filter_from(double width, const PNMImage &copy) {
 #define IMAGETYPE PfmFile
 #define ASIZE get_y_size
 #define BSIZE get_x_size
-#define GETVAL(a, b, channel) get_component(b, a, channel)
-#define SETVAL(a, b, channel, v) set_component(b, a, channel, v)
+#define GETVAL(a, b, channel) get_channel(b, a, channel)
+#define SETVAL(a, b, channel, v) set_channel(b, a, channel, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
@@ -585,8 +591,8 @@ gaussian_filter_from(double width, const PNMImage &copy) {
 #define ASIZE get_x_size
 #define BSIZE get_y_size
 #define HASVAL(a, b) has_point(a, b)
-#define GETVAL(a, b, channel) get_component(a, b, channel)
-#define SETVAL(a, b, channel, v) set_component(a, b, channel, v)
+#define GETVAL(a, b, channel) get_channel(a, b, channel)
+#define SETVAL(a, b, channel, v) set_channel(a, b, channel, v)
 #include "pnm-image-filter-sparse-core.cxx"
 #undef SETVAL
 #undef GETVAL
@@ -601,8 +607,8 @@ gaussian_filter_from(double width, const PNMImage &copy) {
 #define ASIZE get_y_size
 #define BSIZE get_x_size
 #define HASVAL(a, b) has_point(b, a)
-#define GETVAL(a, b, channel) get_component(b, a, channel)
-#define SETVAL(a, b, channel, v) set_component(b, a, channel, v)
+#define GETVAL(a, b, channel) get_channel(b, a, channel)
+#define SETVAL(a, b, channel, v) set_channel(b, a, channel, v)
 #include "pnm-image-filter-sparse-core.cxx"
 #undef SETVAL
 #undef GETVAL

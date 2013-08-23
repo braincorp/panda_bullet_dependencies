@@ -36,6 +36,7 @@ PfmVizzer::
 PfmVizzer(PfmFile &pfm) : _pfm(pfm) {
   _vis_inverse = false;
   _vis_2d = false;
+  _keep_beyond_lens = false;
   _vis_blend = NULL;
 }
 
@@ -67,8 +68,12 @@ project(const Lens *lens) {
       LPoint3f &p = _pfm.modify_point(xi, yi);
 
       LPoint3 film;
-      if (!lens->project(LCAST(PN_stdfloat, p), film)) {
-        _pfm.set_point4(xi, yi, _pfm.get_no_data_value());
+      if (!lens->project(LCAST(PN_stdfloat, p), film) && !_keep_beyond_lens) {
+        if (_pfm.has_no_data_value()) {
+          _pfm.set_point4(xi, yi, _pfm.get_no_data_value());
+        } else {
+          _pfm.set_point4(xi, yi, LVecBase4f(0, 0, 0, 0));
+        }
       } else {
         p = to_uv.xform_point(LCAST(PN_float32, film));
       }
@@ -100,7 +105,9 @@ extrude(const Lens *lens) {
 
   PfmFile result;
   result.clear(_pfm.get_x_size(), _pfm.get_y_size(), 3);
-  result.set_zero_special(true);
+  if (_pfm.has_no_data_value()) {
+    result.set_zero_special(true);
+  }
 
   if (lens->is_linear()) {
     // If the lens is linear (Perspective or Orthographic), we can
@@ -230,8 +237,8 @@ clear_vis_columns() {
 void PfmVizzer::
 add_vis_column(ColumnType source, ColumnType target,
                InternalName *name, const TransformState *transform,
-               const Lens *lens) {
-  add_vis_column(_vis_columns, source, target, name, transform, lens);
+               const Lens *lens, const PfmFile *undist_lut) {
+  add_vis_column(_vis_columns, source, target, name, transform, lens, undist_lut);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -557,6 +564,7 @@ r_fill_displacement(PNMImage &result, int xi, int yi,
 ////////////////////////////////////////////////////////////////////
 void PfmVizzer::
 make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
+  static const bool keep_beyond_lens = true;
   int num_x_cells = 1;
   int num_y_cells = 1;
 
@@ -678,10 +686,11 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
             continue;
           }
 
-          if (skip_points[(yi - y_begin) * x_size + (xi - x_begin)] ||
-              skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin)] ||
-              skip_points[(yi - y_begin) * x_size + (xi - x_begin + 1)] ||
-              skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin + 1)]) {
+          if (!keep_beyond_lens &&
+              (skip_points[(yi - y_begin) * x_size + (xi - x_begin)] ||
+               skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin)] ||
+               skip_points[(yi - y_begin) * x_size + (xi - x_begin + 1)] ||
+               skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin + 1)])) {
             continue;
           }
 
@@ -726,7 +735,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
 void PfmVizzer::
 add_vis_column(VisColumns &vis_columns, ColumnType source, ColumnType target,
                InternalName *name, const TransformState *transform,
-               const Lens *lens) {
+               const Lens *lens, const PfmFile *undist_lut) {
   VisColumn column;
   column._source = source;
   column._target = target;
@@ -736,6 +745,9 @@ add_vis_column(VisColumns &vis_columns, ColumnType source, ColumnType target,
     column._transform = TransformState::make_identity();
   }
   column._lens = lens;
+  if (undist_lut != NULL && undist_lut->is_valid()) {
+    column._undist_lut = undist_lut;
+  }
   vis_columns.push_back(column);
 }
 
@@ -928,20 +940,24 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
   case CT_normal3:
     {
       // Calculate the normal based on two neighboring vertices.
+      bool flip = reverse_normals;
+
       LPoint3f v[3];
       v[0] = pfm.get_point(xi, yi);
-      if (xi + 1 < pfm.get_x_size()) {
+      v[1] = v[0];
+      v[2] = v[0];
+      if (pfm.has_point(xi + 1, yi)) {
         v[1] = pfm.get_point(xi + 1, yi);
-      } else {
-        v[1] = v[0];
-        v[0] = pfm.get_point(xi - 1, yi);
+      } else if (pfm.has_point(xi - 1, yi)) {
+        v[1] = pfm.get_point(xi - 1, yi);
+        flip = !flip;
       }
                 
-      if (yi + 1 < pfm.get_y_size()) {
+      if (pfm.has_point(xi, yi + 1)) {
         v[2] = pfm.get_point(xi, yi + 1);
-      } else {
-        v[2] = v[0];
-        v[0] = pfm.get_point(xi, yi - 1);
+      } else if (pfm.has_point(xi, yi - 1)) {
+        v[2] = pfm.get_point(xi, yi - 1);
+        flip = !flip;
       }
                 
       LVector3f n = LVector3f::zero();
@@ -953,8 +969,17 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
         n[2] += v0[0] * v1[1] - v0[1] * v1[0];
       }
       n.normalize();
-      nassertr(!n.is_nan(), false);
-      if (reverse_normals) {
+      if (n.is_nan()) {
+        /*
+        cerr << "\nnan!\n"
+             << "  v[0] = " << v[0] << "\n"
+             << "  v[1] = " << v[1] << "\n"
+             << "  v[2] = " << v[2] << "\n";
+        */
+        n.set(0, 0, 0);
+        success = false;
+      }
+      if (flip) {
         n = -n;
       }
       if (!transform_vector(n)) {
@@ -986,10 +1011,12 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
 ////////////////////////////////////////////////////////////////////
 bool PfmVizzer::VisColumn::
 transform_point(LPoint2f &point) const {
+  bool success = true;
   if (!_transform->is_identity()) {
     LCAST(PN_float32, _transform->get_mat3()).xform_point_in_place(point);
   }
-  return true;
+
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1014,6 +1041,18 @@ transform_point(LPoint3f &point) const {
       success = false;
     }
     point = to_uv.xform_point(LCAST(PN_float32, film));
+  }
+
+  if (_undist_lut != NULL) {
+    LPoint3f p;
+    if (!_undist_lut->calc_bilinear_point(p, point[0], 1.0 - point[1])) {
+      // Point is missing.
+      point.set(0, 0, 0);
+      success = false;
+    } else {
+      point = p;
+      point[1] = 1.0 - point[1];
+    }
   }
 
   return success;

@@ -27,7 +27,6 @@ BulletRigidBodyNode(const char *name) : BulletBodyNode(name) {
 
   // Motion state
   _motion = new MotionState();
-  _sync = TransformState::make_identity();
 
   // Mass properties
   btScalar mass(0.0);
@@ -86,6 +85,7 @@ void BulletRigidBodyNode::
 shape_changed() {
 
   set_mass(get_mass());
+  transform_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,9 +122,20 @@ PN_stdfloat BulletRigidBodyNode::
 get_mass() const {
 
   btScalar inv_mass = _rigid->getInvMass();
-  btScalar mass = inv_mass == btScalar(0.0) ? btScalar(0.0) : btScalar(1.0) / inv_mass;
+  btScalar mass = (inv_mass == btScalar(0.0)) ? btScalar(0.0) : btScalar(1.0) / inv_mass;
 
   return mass;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_inv_mass
+//       Access: Published
+//  Description: Returns the inverse mass of a rigid body.
+////////////////////////////////////////////////////////////////////
+PN_stdfloat BulletRigidBodyNode::
+get_inv_mass() const {
+
+  return (PN_stdfloat)_rigid->getInvMass();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,6 +186,28 @@ get_inertia() const {
     );
 
   return inertia;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_inv_inertia_diag_local
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LVector3 BulletRigidBodyNode::
+get_inv_inertia_diag_local() const {
+
+  return btVector3_to_LVector3(_rigid->getInvInertiaDiagLocal());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_inv_inertia_tensor_world
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LMatrix3 BulletRigidBodyNode::
+get_inv_inertia_tensor_world() const {
+
+  return btMatrix3x3_to_LMatrix3(_rigid->getInvInertiaTensorWorld());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -272,7 +305,7 @@ transform_changed() {
   NodePath np = NodePath::any_path((PandaNode *)this);
   CPT(TransformState) ts = np.get_net_transform();
 
-  // For kinematic bodies Bullet with collect the transform
+  // For kinematic bodies Bullet will query the transform
   // via Motionstate::getWorldTransform. Therefor we need to
   // store the new transform within the motion state.
   // For dynamic bodies we need to store the net scale within
@@ -288,16 +321,15 @@ transform_changed() {
   }
 
   // Rescale all shapes, but only if the new transform state
-  // has a scale
+  // has a scale, and this scale differes from the current scale.
   if (ts->has_scale()) {
-    LVecBase3 scale = ts->get_scale();
-    if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
-      for (int i=0; i<get_num_shapes(); i++) {
-        PT(BulletShape) shape = _shapes[i];
-        shape->set_local_scale(scale);
-      }
+    btVector3 new_scale = LVecBase3_to_btVector3(ts->get_scale());
+    btVector3 current_scale = _shape->getLocalScaling();
+    btVector3 current_scale_inv(1.0/current_scale.x(), 1.0/current_scale.y(), 1.0/current_scale.z());
 
-      shape_changed();
+    if (new_scale != current_scale) {
+      _shape->setLocalScaling(current_scale_inv);
+      _shape->setLocalScaling(new_scale);
     }
   }
 
@@ -305,9 +337,6 @@ transform_changed() {
   if (!_rigid->isActive()) {
     _rigid->activate(true);
   }
-
-  // Rememeber current transform (bullet_full_sync)
-  _sync = ts;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,19 +350,6 @@ sync_p2b() {
   if (is_kinematic()) {
     transform_changed();
   }
-
-  // Check if net transform has changed (bullet_full_sync)
-  else if (bullet_full_sync) {
-    NodePath np = NodePath::any_path((PandaNode *)this);
-    CPT(TransformState) ts = np.get_net_transform();
-
-    LMatrix4 m_sync = _sync->get_mat();
-    LMatrix4 m_ts = ts->get_mat();
-
-    if (!m_sync.almost_equal(m_ts)) {
-      transform_changed();
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,11 +361,6 @@ void BulletRigidBodyNode::
 sync_b2p() {
 
   _motion->sync_b2p((PandaNode *)this);
-
-  // Store new transform (bullet_full_sync)
-  if (bullet_full_sync) {
-    _motion->get_net_transform(_sync);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -502,6 +513,28 @@ set_angular_factor(const LVector3 &factor) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_total_force
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+LVector3 BulletRigidBodyNode::
+get_total_force() const {
+
+  return btVector3_to_LVector3(_rigid->getTotalForce());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_total_torque
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+LVector3 BulletRigidBodyNode::
+get_total_torque() const {
+
+  return btVector3_to_LVector3(_rigid->getTotalTorque());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletRigidBodyNode::MotionState::Constructor
 //       Access: Public
 //  Description: 
@@ -510,7 +543,6 @@ BulletRigidBodyNode::MotionState::
 MotionState() {
 
   _trans.setIdentity();
-  _scale = LVecBase3(1.0f, 1.0f, 1.0f);
   _disabled = false;
   _dirty = false;
   _was_dirty = false;
@@ -551,10 +583,11 @@ sync_b2p(PandaNode *node) {
   if (!_dirty) return;
 
   NodePath np = NodePath::any_path(node);
-  CPT(TransformState) ts = btTrans_to_TransformState(_trans, _scale);
+  LPoint3 p = btVector3_to_LPoint3(_trans.getOrigin());
+  LQuaternion q = btQuat_to_LQuaternion(_trans.getRotation());
 
   _disabled = true;
-  np.set_transform(NodePath(), ts);
+  np.set_pos_quat(NodePath(), p, q);
   _disabled = false;
   _dirty = false;
 }
@@ -562,29 +595,22 @@ sync_b2p(PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletRigidBodyNode::MotionState::set_net_transform
 //       Access: Public
-//  Description: 
+//  Description: This method stores the global transform within the
+//               Motionstate. It is called from
+//               BulletRigidBodyNode::transform_changed().
+//               For kinematic bodies the global transform is
+//               required since Bullet queries the body transform
+//               via MotionState::getGlobalStranform().
+//               For dynamic bodies the global scale is required,
+//               since Bullet will overwrite the member _trans
+//               by calling MotionState::setGlobalTransform.
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::MotionState::
-set_net_transform(CPT(TransformState) &ts) {
+set_net_transform(const TransformState *ts) {
 
   nassertv(ts);
 
   _trans = TransformState_to_btTrans(ts);
-
-  if (ts->has_scale()) {
-    _scale = ts->get_scale();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRigidBodyNode::MotionState::get_net_transform
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void BulletRigidBodyNode::MotionState::
-get_net_transform(CPT(TransformState) &ts) const {
-
-  ts = btTrans_to_TransformState(_trans, _scale);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -606,9 +632,9 @@ sync_disabled() const {
 bool BulletRigidBodyNode::MotionState::
 pick_dirty_flag() {
 
-  bool flag = _was_dirty;
+  bool rc = _was_dirty;
   _was_dirty = false;
-  return flag;
+  return rc;
 }
 
 ////////////////////////////////////////////////////////////////////

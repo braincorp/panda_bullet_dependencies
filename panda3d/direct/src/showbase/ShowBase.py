@@ -580,8 +580,8 @@ class ShowBase(DirectObject.DirectObject):
                         pipeType.getName()))
 
     def openWindow(self, props = None, fbprops = None, pipe = None, gsg = None,
-                   type = None, name = None, size = None, aspectRatio = None,
-                   makeCamera = True, keepCamera = False,
+                   host = None, type = None, name = None, size = None,
+                   aspectRatio = None, makeCamera = True, keepCamera = False,
                    scene = None, stereo = None, unexposedDraw = None,
                    callbackWindowDict = None, requireWindow = None):
         """
@@ -616,9 +616,10 @@ class ShowBase(DirectObject.DirectObject):
         # parameters.
         func = lambda : self._doOpenWindow(
             props = props, fbprops = fbprops, pipe = pipe, gsg = gsg,
-            type = type, name = name, size = size, aspectRatio = aspectRatio,
-            makeCamera = makeCamera, keepCamera = keepCamera,
-            scene = scene, stereo = stereo, unexposedDraw = unexposedDraw,
+            host = host, type = type, name = name, size = size,
+            aspectRatio = aspectRatio, makeCamera = makeCamera,
+            keepCamera = keepCamera, scene = scene, stereo = stereo,
+            unexposedDraw = unexposedDraw,
             callbackWindowDict = callbackWindowDict)
         
         if self.win:
@@ -675,8 +676,9 @@ class ShowBase(DirectObject.DirectObject):
 
         return win
 
-    def _doOpenWindow(self, props = None, fbprops = None, pipe = None, gsg = None,
-                      type = None, name = None, size = None, aspectRatio = None,
+    def _doOpenWindow(self, props = None, fbprops = None, pipe = None,
+                      gsg = None, host = None, type = None, name = None,
+                      size = None, aspectRatio = None,
                       makeCamera = True, keepCamera = False,
                       scene = None, stereo = None, unexposedDraw = None,
                       callbackWindowDict = None):
@@ -694,6 +696,7 @@ class ShowBase(DirectObject.DirectObject):
         if isinstance(gsg, GraphicsOutput):
             # If the gsg is a window or buffer, it means to use the
             # GSG from that buffer.
+            host = gsg
             gsg = gsg.getGsg()
             
         # If we are using DirectX, force a new GSG to be created,
@@ -734,7 +737,11 @@ class ShowBase(DirectObject.DirectObject):
         if callbackWindowDict:
             flags = flags | GraphicsPipe.BFRequireCallbackWindow
 
-        if gsg:
+        if host:
+            assert host.isValid()
+            win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
+                                                 props, flags, host.getGsg(), host)
+        elif gsg:
             win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
                                                  props, flags, gsg)
         else:
@@ -1205,7 +1212,7 @@ class ShowBase(DirectObject.DirectObject):
         if win == None:
             win = self.win
 
-        if win != None and win.hasSize():
+        if win != None and win.hasSize() and win.getSbsLeftYSize() != 0:
             aspectRatio = float(win.getSbsLeftXSize()) / float(win.getSbsLeftYSize())
 
         else:
@@ -1216,9 +1223,12 @@ class ShowBase(DirectObject.DirectObject):
                 if not props.hasSize():
                     props = WindowProperties.getDefault()
 
-            if props.hasSize():
+            if props.hasSize() and props.getYSize() != 0:
                 aspectRatio = float(props.getXSize()) / float(props.getYSize())
 
+        if aspectRatio == 0:
+            return 1
+        
         return aspectRatio
 
     def getSize(self, win = None):
@@ -2654,7 +2664,8 @@ class ShowBase(DirectObject.DirectObject):
         if aspectRatio != self.__oldAspectRatio:
             self.__oldAspectRatio = aspectRatio
             # Fix up some anything that depends on the aspectRatio
-            self.camLens.setAspectRatio(aspectRatio)
+            if self.camLens:
+                self.camLens.setAspectRatio(aspectRatio)
             if aspectRatio < 1:
                 # If the window is TALL, lets expand the top and bottom
                 self.aspect2d.setScale(1.0, aspectRatio, aspectRatio)

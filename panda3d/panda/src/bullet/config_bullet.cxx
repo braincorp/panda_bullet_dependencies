@@ -26,6 +26,7 @@
 #include "bulletConvexHullShape.h"
 #include "bulletConvexPointCloudShape.h"
 #include "bulletCylinderShape.h"
+#include "bulletMinkowskiSumShape.h"
 #include "bulletDebugNode.h"
 #include "bulletFilterCallbackData.h"
 #include "bulletGenericConstraint.h"
@@ -129,13 +130,6 @@ ConfigVariableDouble bullet_additional_damping_angular_threshold
 PRC_DESC("Only used when bullet-additional-damping is set to TRUE. "
          "Default value is 0.01."));
 
-ConfigVariableBool bullet_full_sync
-("bullet-full-sync", false,
-PRC_DESC("Enables optional synchronisation features like checking "
-         "for changed in a nodes net transform before each simulation "
-         "step. Disable these features for better performance. "
-         "Default value is FALSE."));
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libbullet
 //  Description: Initializes the library. This must be called at
@@ -166,6 +160,7 @@ init_libbullet() {
   BulletConvexHullShape::init_type();
   BulletConvexPointCloudShape::init_type();
   BulletCylinderShape::init_type();
+  BulletMinkowskiSumShape::init_type();
   BulletDebugNode::init_type();
   BulletFilterCallbackData::init_type();
   BulletGenericConstraint::init_type();

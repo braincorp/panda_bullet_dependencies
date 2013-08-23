@@ -31,6 +31,7 @@
 #include "pta_LVecBase3.h"
 
 class BulletSoftBodyConfig;
+class BulletSoftBodyControl;
 class BulletSoftBodyMaterial;
 class BulletSoftBodyWorldInfo;
 
@@ -38,7 +39,7 @@ class BulletSoftBodyWorldInfo;
 //       Class : BulletSoftBodyNodeElement
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class BulletSoftBodyNodeElement {
+class EXPCL_PANDABULLET BulletSoftBodyNodeElement {
 
 PUBLISHED:
   INLINE ~BulletSoftBodyNodeElement();
@@ -122,6 +123,23 @@ PUBLISHED:
   void append_anchor(int node, BulletRigidBodyNode *body, 
       const LVector3 &pivot,
       bool disable=false);
+
+  // Links
+  void append_linear_joint(BulletBodyNode *body, int cluster,
+    PN_stdfloat erp=1.0,
+    PN_stdfloat cfm=1.0,
+    PN_stdfloat split=1.0);
+
+  void append_linear_joint(BulletBodyNode *body, const LPoint3 &pos,
+    PN_stdfloat erp=1.0,
+    PN_stdfloat cfm=1.0,
+    PN_stdfloat split=1.0);
+
+  void append_angular_joint(BulletBodyNode *body, const LVector3 &axis,
+    PN_stdfloat erp=1.0,
+    PN_stdfloat cfm=1.0,
+    PN_stdfloat split=1.0,
+    BulletSoftBodyControl *control=NULL);
 
   // Materials
   int get_num_materials() const;

@@ -581,6 +581,8 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "TexImage3D");
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexSubImage3D");
+    _glCopyTexSubImage3D = (PFNGLCOPYTEXSUBIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CopyTexSubImage3D");
 
   } else if (has_extension("GL_EXT_texture3D")) {
     _supports_3d_texture = true;
@@ -589,14 +591,23 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "TexImage3DEXT");
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexSubImage3DEXT");
-  } else if (has_extension("GL_OES_texture3D") || has_extension("GL_OES_texture_3D")) {
+
+    _glCopyTexSubImage3D = NULL;
+    if (has_extension("GL_EXT_copy_texture")) {
+      _glCopyTexSubImage3D = (PFNGLCOPYTEXSUBIMAGE3DPROC)
+        get_extension_func(GLPREFIX_QUOTED, "CopyTexSubImage3DEXT");
+    }
+
+  } else if (has_extension("GL_OES_texture_3D")) {
     _supports_3d_texture = true;
 
     _glTexImage3D = (PFNGLTEXIMAGE3DPROC_P)
       get_extension_func(GLPREFIX_QUOTED, "TexImage3DOES");
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexSubImage3DOES");
-    
+    _glCopyTexSubImage3D = (PFNGLCOPYTEXSUBIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "CopyTexSubImage3DOES");
+
 #ifdef OPENGLES_2
     _glFramebufferTexture3D = (PFNGLFRAMEBUFFERTEXTURE3DOES)
       get_extension_func(GLPREFIX_QUOTED, "FramebufferTexture3DOES");
@@ -611,9 +622,18 @@ reset() {
     }
   }
 
+  _supports_2d_texture_array = false;
 #ifndef OPENGLES
   _supports_2d_texture_array = has_extension("GL_EXT_texture_array");
+  if (_supports_2d_texture_array) {
+    _glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
+      get_extension_func(GLPREFIX_QUOTED, "FramebufferTextureLayerEXT");
+  } else {
+    // ARB_geometry_shader4 also provides a version.
+    _glFramebufferTextureLayer = NULL;
+  }
 #endif
+
 #ifdef OPENGLES_2
   _supports_cube_map = true;
 #else
@@ -931,6 +951,24 @@ reset() {
       _shader_caps._active_vprofile = (int)cgGLGetLatestProfile(CG_GL_VERTEX);
       _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
       _shader_caps._active_gprofile = (int)cgGLGetLatestProfile(CG_GL_GEOMETRY);
+
+      // cgGLGetLatestProfile doesn't seem to return anything other
+      // arbvp1/arbfp1 on non-NVIDIA cards, which is severely limiting.
+      if ((_shader_caps._active_vprofile == CG_PROFILE_ARBVP1 ||
+           _shader_caps._active_fprofile == CG_PROFILE_ARBFP1) &&
+          cgGLIsProfileSupported(CG_PROFILE_GLSLV) &&
+          cgGLIsProfileSupported(CG_PROFILE_GLSLF)) {
+
+        // So, if this happens, we set it to GLSL, which is
+        // usually supported on all cards.
+        _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
+        _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
+#if CG_VERSION_NUM >= 2200
+        if (cgGLIsProfileSupported(CG_PROFILE_GLSLG)) {
+          _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
+        }
+#endif
+      }
     }
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
@@ -1004,7 +1042,7 @@ reset() {
        get_extension_func(GLPREFIX_QUOTED, "GetUniformLocation");
     _glLinkProgram = (PFNGLLINKPROGRAMPROC)
        get_extension_func(GLPREFIX_QUOTED, "LinkProgram");
-    _glShaderSource = (PFNGLSHADERSOURCEPROC)
+    _glShaderSource = (PFNGLSHADERSOURCEPROC_P)
        get_extension_func(GLPREFIX_QUOTED, "ShaderSource");
     _glUseProgram = (PFNGLUSEPROGRAMPROC)
        get_extension_func(GLPREFIX_QUOTED, "UseProgram");
@@ -1030,6 +1068,13 @@ reset() {
     if (_supports_geometry_shaders) {
       _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
         get_extension_func(GLPREFIX_QUOTED, "ProgramParameteri");
+      _glFramebufferTexture = (PFNGLFRAMEBUFFERTEXTUREARBPROC)
+        get_extension_func(GLPREFIX_QUOTED, "FramebufferTextureARB");
+
+      if (_glFramebufferTextureLayer == NULL) {
+        _glFramebufferTextureLayer = (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
+          get_extension_func(GLPREFIX_QUOTED, "FramebufferTextureLayerARB");
+      }
     }
     if (_supports_tessellation_shaders) {
       _glPatchParameteri = (PFNGLPATCHPARAMETERIPROC)
@@ -1095,12 +1140,6 @@ reset() {
   _glCheckFramebufferStatus = glCheckFramebufferStatus;
   _glFramebufferTexture1D = NULL;
   _glFramebufferTexture2D = glFramebufferTexture2D;
-  if (has_extension("GL_OES_texture3D")) {
-    _glFramebufferTexture3D = (PFNGLFRAMEBUFFERTEXTURE3DOES)
-      get_extension_func(GLPREFIX_QUOTED, "FramebufferTexture3DOES");
-  } else {
-    _glFramebufferTexture3D = NULL;
-  }
   _glFramebufferRenderbuffer = glFramebufferRenderbuffer;
   _glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameteriv;
   _glGenerateMipmap = glGenerateMipmap;
@@ -1171,7 +1210,6 @@ reset() {
     _glFramebufferTexture1D = NULL;
     _glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DOESPROC)
       get_extension_func(GLPREFIX_QUOTED, "FramebufferTexture2DOES");
-    _glFramebufferTexture3D = NULL;
     _glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFEROESPROC)
       get_extension_func(GLPREFIX_QUOTED, "FramebufferRenderbufferOES");
     _glGetFramebufferAttachmentParameteriv = (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVOESPROC)
@@ -1901,15 +1939,17 @@ clear(DrawableRegion *clearable) {
     }
   }
 
-  if (clearable->get_clear_color_active()) {
-    LColor v = clearable->get_clear_color();
-    GLP(ClearColor)(v[0],v[1],v[2],v[3]);
-    if (CLP(color_mask)) {
-      GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  if (_current_properties->get_color_bits() > 0) {
+    if (clearable->get_clear_color_active()) {
+      LColor v = clearable->get_clear_color();
+      GLP(ClearColor)(v[0],v[1],v[2],v[3]);
+      if (CLP(color_mask)) {
+        GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      }
+      _state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
+      mask |= GL_COLOR_BUFFER_BIT;
+      set_draw_buffer(clearable->get_draw_buffer_type());
     }
-    _state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
-    mask |= GL_COLOR_BUFFER_BIT;
-    set_draw_buffer(clearable->get_draw_buffer_type());
   }
   
   if (clearable->get_clear_depth_active()) {
@@ -4152,8 +4192,8 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 //  Description: Copy the pixels within the indicated display
 //               region from the framebuffer into texture memory.
 //
-//               If z > -1, it is the cube map index into which to
-//               copy.
+//               If z > -1, it is the cube map index or layer index
+//               into which to copy.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
@@ -4166,7 +4206,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
-  tex->set_size_padded(w, h);
+  tex->set_size_padded(w, h, tex->get_z_size());
 
   if (tex->get_compression() == Texture::CM_default) {
     // Unless the user explicitly turned on texture compression, turn
@@ -4176,15 +4216,40 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   // Sanity check everything.
   if (z >= 0) {
-    if (!_supports_cube_map) {
+    if (z >= tex->get_z_size()) {
+      // This can happen, when textures with different layer counts
+      // are attached to a buffer.  We simply ignore this if it happens.
       return false;
     }
-    nassertr(z < 6, false);
-    nassertr(tex->get_texture_type() == Texture::TT_cube_map, false);
+
     if ((w != tex->get_x_size()) ||
-        (h != tex->get_y_size()) ||
-        (w != h)) {
+        (h != tex->get_y_size())) {
       return false;
+    }
+
+    if (tex->get_texture_type() == Texture::TT_cube_map) {
+      if (!_supports_cube_map) {
+        return false;
+      }
+
+      nassertr(z < 6, false);
+      if (w != h) {
+        return false;
+      }
+
+    } else if (tex->get_texture_type() == Texture::TT_3d_texture) {
+      if (!_supports_3d_texture) {
+        return false;
+      }
+
+    } else if (tex->get_texture_type() == Texture::TT_2d_texture_array) {
+      if (!_supports_2d_texture_array) {
+        return false;
+      }
+
+    } else {
+      GLCAT.error()
+        << "Don't know how to copy framebuffer to texture " << *tex << "\n";
     }
   } else {
     nassertr(tex->get_texture_type() == Texture::TT_2d_texture, false);
@@ -4225,6 +4290,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   GLint internal_format = get_internal_image_format(tex);
   int width = tex->get_x_size();
   int height = tex->get_y_size();
+  int depth = tex->get_z_size();
 
   bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
   if (uses_mipmaps) {
@@ -4242,34 +4308,52 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   }
 
   bool new_image = needs_reload || gtc->was_image_modified();
+
+  if (z >= 0) {
+    if (target == GL_TEXTURE_CUBE_MAP) {
+      // Copy to a cube map face, which is treated as a 2D texture.
+      target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+      depth = 1;
+      z = -1;
+
+      // Cube map faces seem to have trouble with CopyTexSubImage, so we
+      // always reload the image.
+      new_image = true;
+    }
+  }
+
   if (!gtc->_already_applied ||
       internal_format != gtc->_internal_format ||
       uses_mipmaps != gtc->_uses_mipmaps ||
       width != gtc->_width ||
       height != gtc->_height ||
-      1 != gtc->_depth) {
+      depth != gtc->_depth) {
     // If the texture properties have changed, we need to reload the
     // image.
     new_image = true;
   }
+
   if (z >= 0) {
-    // Copy to a cube map face.
-    target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+    if (new_image) {
+      // These won't be used because we pass a NULL image, but we still
+      // have to specify them.  Might as well use the actual values.
+      GLint external_format = get_external_image_format(tex);
+      GLint component_type = get_component_type(tex->get_component_type());
+      _glTexImage3D(target, 0, internal_format, width, height, depth, 0, external_format, component_type, NULL);
+    }
 
-    // Cube map faces seem to have trouble with CopyTexSubImage, so we
-    // always reload the image.
-    new_image = true;
-  }
-
-  if (new_image) {
-    // We have to create a new image.
-    // It seems that OpenGL accepts a size higher than the framebuffer,
-    // but if we run into trouble we'll have to replace this with
-    // something smarter.
-    GLP(CopyTexImage2D)(target, 0, internal_format, xo, yo, width, height, 0);
+    _glCopyTexSubImage3D(target, 0, 0, 0, z, xo, yo, w, h);
   } else {
-    // We can overlay the existing image.
-    GLP(CopyTexSubImage2D)(target, 0, 0, 0, xo, yo, w, h);
+    if (new_image) {
+      // We have to create a new image.
+      // It seems that OpenGL accepts a size higher than the framebuffer,
+      // but if we run into trouble we'll have to replace this with
+      // something smarter.
+      GLP(CopyTexImage2D)(target, 0, internal_format, xo, yo, width, height, 0);
+    } else {
+      // We can overlay the existing image.
+      GLP(CopyTexSubImage2D)(target, 0, 0, 0, xo, yo, w, h);
+    }
   }
 
   gtc->_already_applied = true;
@@ -4277,7 +4361,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   gtc->_internal_format = internal_format;
   gtc->_width = width;
   gtc->_height = height;
-  gtc->_depth = 1;
+  gtc->_depth = depth;
 
   gtc->mark_loaded();
   gtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
@@ -4355,6 +4439,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 
   Texture::TextureType texture_type;
   int z_size;
+  //TODO: should be extended to support 3D textures and 2D arrays.
   if (z >= 0) {
     texture_type = Texture::TT_cube_map;
     z_size = 6;
@@ -4368,6 +4453,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
       tex->get_component_type() != component_type ||
       tex->get_format() != format ||
       tex->get_texture_type() != texture_type) {
+
     // Re-setup the texture; its properties have changed.
     tex->setup_texture(texture_type, w, h, z_size,
                        component_type, format);
@@ -4947,11 +5033,7 @@ do_issue_material() {
   }
 #endif  // NDEBUG
 
-#ifndef OPENGLES
   GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
-#else
-  static const GLenum face = GL_FRONT_AND_BACK;
-#endif  // OPENGLES
 
   call_glMaterialfv(face, GL_SPECULAR, material->get_specular());
   call_glMaterialfv(face, GL_EMISSION, material->get_emission());
@@ -5007,10 +5089,17 @@ do_issue_material() {
     }
   }
 
-#ifndef OPENGLES
   GLP(LightModeli)(GL_LIGHT_MODEL_LOCAL_VIEWER, material->get_local());
   GLP(LightModeli)(GL_LIGHT_MODEL_TWO_SIDE, material->get_twoside());
-#endif  // OPENGLES
+
+#ifndef OPENGLES
+  if (CLP(separate_specular_color)) {
+    GLP(LightModeli)(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
+  } else {
+    GLP(LightModeli)(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
+  }
+#endif
+
   report_my_gl_errors();
 #endif  // OPENGLES_2
 }
@@ -5660,6 +5749,7 @@ get_extension_func(const char *prefix, const char *name) {
     { "DrawRangeElements", (void *)&GLP(DrawRangeElements) },
     { "TexImage3D", (void *)&GLP(TexImage3D) },
     { "TexSubImage3D", (void *)&GLP(TexSubImage3D) },
+    { "CopyTexSubImage3D", (void *)&GLP(CopyTexSubImage3D) },
 #endif
 #ifdef EXPECT_GL_VERSION_1_3
     { "ActiveTexture", (void *)&GLP(ActiveTexture) },
@@ -5750,27 +5840,26 @@ set_draw_buffer(int rbtype) {
 
     GLuint buffers[16];
     int nbuffers=0;
-    if (rbtype & RenderBuffer::T_color) {
-      buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT;
+    int index = 0;
+    if (_current_properties->get_color_bits() > 0) {
+      if (rbtype & RenderBuffer::T_color) {
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
+      }
     }
-    int index = 1;
     for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
       if (rbtype & (RenderBuffer::T_aux_rgba_0 << i)) {
-        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
       }
-      index += 1;
     }
     for (int i=0; i<_current_properties->get_aux_hrgba(); i++) {
       if (rbtype & (RenderBuffer::T_aux_hrgba_0 << i)) {
-        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
       }
-      index += 1;
     }
     for (int i=0; i<_current_properties->get_aux_float(); i++) {
       if (rbtype & (RenderBuffer::T_aux_float_0 << i)) {
-        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
       }
-      index += 1;
     }
     _glDrawBuffers(nbuffers, buffers);
 
@@ -6287,15 +6376,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_depth_component:
     return GL_DEPTH_COMPONENT;
   case Texture::F_depth_stencil:
-#ifndef OPENGLES_2
-    if (CLP(force_depth_stencil)) {
-      return GL_DEPTH_STENCIL_EXT;
-    } else {
-#endif
-      return GL_DEPTH_COMPONENT;
-#ifndef OPENGLES_2
-    }
-#endif
+    return _supports_depth_stencil ? GL_DEPTH_STENCIL_EXT : GL_DEPTH_COMPONENT;
 #ifndef OPENGLES
   case Texture::F_red:
     return GL_RED;
@@ -6501,7 +6582,11 @@ get_internal_image_format(Texture *tex) const {
     return GL_COLOR_INDEX;
 #endif
   case Texture::F_depth_component:
-    return GL_DEPTH_COMPONENT;
+    if (tex->get_component_type() == Texture::T_float) {
+      return GL_DEPTH_COMPONENT32F;
+    } else {
+      return GL_DEPTH_COMPONENT;
+    }
   case Texture::F_depth_component16:
 #ifdef OPENGLES_1
     return GL_DEPTH_COMPONENT16_OES;
@@ -6516,7 +6601,11 @@ get_internal_image_format(Texture *tex) const {
 #else
     return GL_DEPTH_COMPONENT24;
   case Texture::F_depth_component32:
-    return GL_DEPTH_COMPONENT32;
+    if (tex->get_component_type() == Texture::T_float) {
+      return GL_DEPTH_COMPONENT32F;
+    } else {
+      return GL_DEPTH_COMPONENT32;
+    }
 #endif
   case Texture::F_depth_stencil:
 #ifndef OPENGLES_2
@@ -7734,15 +7823,15 @@ update_standard_texture_bindings() {
     TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
     if (tc == (TextureContext *)NULL) {
       // Something wrong with this texture; skip it.
-      break;
+      continue;
     }
     
 #ifndef OPENGLES_2
     // Then, turn on the current texture mode.
     GLenum target = get_texture_target(texture->get_texture_type());
-    if (target == GL_NONE) {
+    if (target == GL_NONE || target == GL_TEXTURE_2D_ARRAY_EXT) {
       // Unsupported texture mode.
-      break;
+      continue;
     }
     GLP(Enable)(target);
 #endif
@@ -7751,7 +7840,7 @@ update_standard_texture_bindings() {
 #ifndef OPENGLES_2
       GLP(Disable)(target);
 #endif
-      break;
+      continue;
     }
     
     if (stage->involves_color_scale() && _color_scale_enabled) {
@@ -8511,7 +8600,10 @@ specify_texture(CLP(TextureContext) *gtc) {
 
 #ifndef OPENGLES
   if (tex->get_format() == Texture::F_depth_stencil ||
-      tex->get_format() == Texture::F_depth_component) {
+      tex->get_format() == Texture::F_depth_component ||
+      tex->get_format() == Texture::F_depth_component16 ||
+      tex->get_format() == Texture::F_depth_component24 ||
+      tex->get_format() == Texture::F_depth_component32) {
     GLP(TexParameteri)(target, GL_DEPTH_TEXTURE_MODE_ARB, GL_INTENSITY);
     if (_supports_shadow_filter) {
       if ((tex->get_magfilter() == Texture::FT_shadow) ||
@@ -8614,7 +8706,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
   if (!get_supports_compressed_texture_format(image_compression)) {
     image = tex->get_uncompressed_ram_image();
     image_compression = Texture::CM_off;
-  } 
+  }
 
   if (GLCAT.is_debug()) {
     if (image.is_null()) {
@@ -8989,7 +9081,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "subloading existing texture object, " << width << " x " << height
-        << " x " << depth << ", mipmaps " << num_ram_mipmap_levels
+        << " x " << depth << ", z = " << z << ", mipmaps " << num_ram_mipmap_levels
         << ", uses_mipmaps = " << uses_mipmaps << "\n";
     }
 
@@ -9121,31 +9213,37 @@ upload_texture_image(CLP(TextureContext) *gtc,
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "loading new texture object, " << width << " x " << height
-        << " x " << depth << ", mipmaps " << num_ram_mipmap_levels 
+        << " x " << depth << ", z = " << z << ", mipmaps " << num_ram_mipmap_levels 
         << ", uses_mipmaps = " << uses_mipmaps << "\n";
     }
 
     if (num_ram_mipmap_levels == 0) {
 #ifndef OPENGLES_2
       if ((external_format == GL_DEPTH_STENCIL_EXT) && get_supports_depth_stencil()) {
-        GLP(TexImage2D)(page_target, 0, GL_DEPTH_STENCIL_EXT,
-                        width, height, 0, GL_DEPTH_STENCIL_EXT, 
 #ifdef OPENGLES_1
-                        GL_UNSIGNED_INT_24_8_OES, 
+        component_type = GL_UNSIGNED_INT_24_8_OES;
 #else
-                        GL_UNSIGNED_INT_24_8_EXT, 
-#endif  // OPENGLES_1
-                        NULL);
-      } else {
-#endif  // OPENGLES_2
-        GLP(TexImage2D)(page_target, 0, internal_format,
-                        width, height, 0,
-                        external_format, GL_UNSIGNED_BYTE, NULL);
-#ifndef OPENGLES_2
+        component_type = GL_UNSIGNED_INT_24_8_EXT;
+#endif
       }
-#endif  // OPENGLES_2
+#endif
+
+      // We don't have any RAM mipmap levels, so we create an uninitialized OpenGL
+      // texture.  Presumably this will be used later for render-to-texture or so.
+      switch (page_target) {
+        case GL_TEXTURE_1D:
+          GLP(TexImage1D)(page_target, 0, internal_format, width, 0, external_format, component_type, NULL);
+          break;
+        case GL_TEXTURE_3D:
+        case GL_TEXTURE_2D_ARRAY:
+          _glTexImage3D(page_target, 0, internal_format, width, height, depth, 0, external_format, component_type, NULL);
+          break;
+        default:
+          GLP(TexImage2D)(page_target, 0, internal_format, width, height, 0, external_format, component_type, NULL);
+          break;
+      }
     }
-    
+
     for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
@@ -9262,7 +9360,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
       GLCAT.error()
         << "GL texture creation failed for " << tex->get_name()
         << " : " << get_error_string(error_code) << "\n";
-      
+
       gtc->_already_applied = false;
       return false;
     }
@@ -9621,6 +9719,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     break;
   case GL_DEPTH_COMPONENT24:
   case GL_DEPTH_COMPONENT32:
+  case GL_DEPTH_COMPONENT32F:
     type = Texture::T_float;
     format = Texture::F_depth_component;
     break;
@@ -10013,7 +10112,7 @@ get_supports_cg_profile(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::bind_fbo
 //       Access: Protected
-//  Description: Binds an FBO object.
+//  Description: Binds a framebuffer object.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 bind_fbo(GLuint fbo) {

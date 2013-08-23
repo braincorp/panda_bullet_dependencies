@@ -7,7 +7,6 @@
 /wglGraphicsBuffer.cxx/1.56/Mon Feb 13 14:13:36 2012//
 /wglGraphicsBuffer.h/1.31/Sat Feb 11 21:09:37 2012//
 /wglGraphicsPipe.I/1.4/Wed May 28 18:38:34 2008//
-/wglGraphicsPipe.cxx/1.60/Mon Feb 13 14:13:36 2012//
 /wglGraphicsPipe.h/1.28/Mon Jan  9 23:47:25 2012//
 /wglGraphicsStateGuardian.I/1.10/Sat Feb 11 21:09:37 2012//
 /wglGraphicsStateGuardian.cxx/1.32/Mon Feb 13 14:13:36 2012//
@@ -16,4 +15,5 @@
 /wglGraphicsWindow.cxx/1.118/Fri Feb 10 18:21:56 2012//
 /wglGraphicsWindow.h/1.47/Fri Feb 10 18:21:56 2012//
 /wglext.h/1.6/Mon Oct 10 05:25:19 2011//
+/wglGraphicsPipe.cxx/1.61/Fri Aug 23 20:47:56 2013//
 D

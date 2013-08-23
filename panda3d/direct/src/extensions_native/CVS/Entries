@@ -5,7 +5,6 @@
 /HTTPChannel_extensions.py/1.2/Sat Dec  8 21:49:14 2007//
 /Mat3_extensions.py/1.3/Sat Dec  8 21:49:14 2007//
 /NodePathCollection_extensions.py/1.6/Fri Oct 21 19:58:12 2011//
-/NodePath_extensions.py/1.18/Fri Feb 17 17:33:19 2012//
 /OdeBody_extensions.py/1.2/Sat Dec  8 21:49:14 2007//
 /OdeGeom_extensions.py/1.3/Sat Dec  8 21:49:14 2007//
 /OdeJoint_extensions.py/1.3/Sat Dec  8 21:49:14 2007//
@@ -17,4 +16,5 @@
 /VBase4_extensions.py/1.5/Wed Nov 12 20:37:20 2008//
 /__init__.py/1.2/Fri May 27 16:47:12 2005//
 /extension_native_helpers.py/1.19/Fri Mar 19 10:32:10 2010//
+/NodePath_extensions.py/1.19/Fri Aug 23 20:48:04 2013//
 D

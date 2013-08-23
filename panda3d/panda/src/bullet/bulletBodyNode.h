@@ -38,7 +38,7 @@ PUBLISHED:
   INLINE ~BulletBodyNode();
 
   // Shapes
-  void add_shape(BulletShape *shape, CPT(TransformState) xform=NULL);
+  void add_shape(BulletShape *shape, const TransformState *xform=TransformState::make_identity());
   void remove_shape(BulletShape *shape);
 
   INLINE int get_num_shapes() const;
@@ -94,6 +94,11 @@ PUBLISHED:
   INLINE PN_stdfloat get_friction() const;
   INLINE void set_friction(PN_stdfloat friction);
 
+#if BT_BULLET_VERSION >= 281
+  INLINE PN_stdfloat get_rolling_friction() const;
+  INLINE void set_rolling_friction(PN_stdfloat friction);
+#endif
+
   INLINE bool has_anisotropic_friction() const;
   void set_anisotropic_friction(const LVecBase3 &friction);
   LVecBase3 get_anisotropic_friction() const;
@@ -103,6 +108,9 @@ PUBLISHED:
   PN_stdfloat get_ccd_motion_threshold() const;
   void set_ccd_swept_sphere_radius(PN_stdfloat radius);
   void set_ccd_motion_threshold(PN_stdfloat threshold);
+
+  // Special
+  void set_transform_dirty();
 
 public:
   virtual btCollisionObject *get_object() const = 0;

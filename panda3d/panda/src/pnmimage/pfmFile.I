@@ -59,13 +59,13 @@ has_point(int x, int y) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::get_component
+//     Function: PfmFile::get_channel
 //       Access: Published
-//  Description: Returns the cth component of the point value at the
+//  Description: Returns the cth channel of the point value at the
 //               indicated point.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_float32 PfmFile::
-get_component(int x, int y, int c) const {
+get_channel(int x, int y, int c) const {
   nassertr(x >= 0 && x < _x_size &&
            y >= 0 && y < _y_size &&
            c >= 0 && c < _num_channels, 0.0f);
@@ -73,13 +73,13 @@ get_component(int x, int y, int c) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_component
+//     Function: PfmFile::set_channel
 //       Access: Published
-//  Description: Replaces the cth component of the point value at the
+//  Description: Replaces the cth channel of the point value at the
 //               indicated point.
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
-set_component(int x, int y, int c, PN_float32 value) {
+set_channel(int x, int y, int c, PN_float32 value) {
   nassertv(x >= 0 && x < _x_size &&
            y >= 0 && y < _y_size &&
            c >= 0 && c < _num_channels);
@@ -196,9 +196,7 @@ modify_point2(int x, int y) {
 ////////////////////////////////////////////////////////////////////
 INLINE const LPoint3f &PfmFile::
 get_point(int x, int y) const {
-  nassertr(x >= 0 && x < _x_size &&
-           y >= 0 && y < _y_size, LPoint3f::zero());
-  return *(LPoint3f *)&_table[(y * _x_size + x) * _num_channels];
+  return get_point3(x, y);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,6 +208,55 @@ get_point(int x, int y) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
 set_point(int x, int y, const LVecBase3f &point) {
+  set_point3(x, y, point);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_point
+//       Access: Published
+//  Description: Replaces the 3-component point value at the indicated
+//               point.  In a 1-channel image, the channel value is in
+//               the x component.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_point(int x, int y, const LVecBase3d &point) {
+  set_point3(x, y, point);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::modify_point
+//       Access: Published
+//  Description: Returns a modifiable 3-component point value at the
+//               indicated point.
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f &PfmFile::
+modify_point(int x, int y) {
+  return modify_point3(x, y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_point3
+//       Access: Published
+//  Description: Returns the 3-component point value at the indicated
+//               point.  In a 1-channel image, the channel value is in
+//               the x component.
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint3f &PfmFile::
+get_point3(int x, int y) const {
+  nassertr(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size, LPoint3f::zero());
+  return *(LPoint3f *)&_table[(y * _x_size + x) * _num_channels];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_point3
+//       Access: Published
+//  Description: Replaces the 3-component point value at the indicated
+//               point.  In a 1-channel image, the channel value is in
+//               the x component.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_point3(int x, int y, const LVecBase3f &point) {
   nassertv(!point.is_nan());
   nassertv(x >= 0 && x < _x_size &&
            y >= 0 && y < _y_size);
@@ -233,25 +280,25 @@ set_point(int x, int y, const LVecBase3f &point) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_point
+//     Function: PfmFile::set_point3
 //       Access: Published
 //  Description: Replaces the 3-component point value at the indicated
 //               point.  In a 1-channel image, the channel value is in
 //               the x component.
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
-set_point(int x, int y, const LVecBase3d &point) {
-  set_point(x, y, LCAST(PN_float32, point));
+set_point3(int x, int y, const LVecBase3d &point) {
+  set_point3(x, y, LCAST(PN_float32, point));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::modify_point
+//     Function: PfmFile::modify_point3
 //       Access: Published
 //  Description: Returns a modifiable 3-component point value at the
 //               indicated point.
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f &PfmFile::
-modify_point(int x, int y) {
+modify_point3(int x, int y) {
 #ifndef NDEBUG
   static LPoint3f dummy_value = LPoint3f::zero();
   nassertr(x >= 0 && x < _x_size &&
@@ -423,8 +470,7 @@ set_zero_special(bool zero_special) {
 //  Description: Sets the no_data_chan4 flag.  When this flag is true,
 //               and the pfm file has 4 channels, then a negative
 //               value in the fourth channel indicates no data.  When
-//               it is false, a zero or positive value in the fourth
-//               channel indicates valid data.
+//               it is false, all points are valid.
 //
 //               This is a special case of set_no_data_value().
 ////////////////////////////////////////////////////////////////////
@@ -432,7 +478,7 @@ INLINE void PfmFile::
 set_no_data_chan4(bool chan4) {
   if (chan4 && _num_channels == 4) {
     _has_no_data_value = true;
-    _no_data_value = LPoint4f::zero();
+    _no_data_value.set(0.0, 0.0, 0.0, -1.0);
     _has_point = has_point_chan4;
   } else {
     clear_no_data_value();

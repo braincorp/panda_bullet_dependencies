@@ -15,7 +15,6 @@
 /globalMilesManager.I/1.4/Wed Oct  8 23:23:51 2008//
 /globalMilesManager.cxx/1.6/Tue Feb  7 05:22:45 2012//
 /globalMilesManager.h/1.5/Wed Oct  8 23:23:51 2008//
-/milesAudioManager.cxx/1.70/Mon Oct 10 05:25:12 2011//
 /milesAudioManager.h/1.33/Mon Oct 10 05:25:12 2011//
 /milesAudioSample.I/1.2/Wed May 28 18:37:28 2008//
 /milesAudioSample.cxx/1.8/Mon Oct 10 05:25:12 2011//
@@ -36,4 +35,5 @@
 /openalAudioSound.cxx/1.10/Tue Nov  8 01:44:33 2011//
 /openalAudioSound.h/1.10/Mon Oct 10 05:25:12 2011//
 /openal_audio_composite1.cxx/1.1/Mon Aug 20 22:34:59 2007//
+/milesAudioManager.cxx/1.71/Fri Aug 23 20:47:09 2013//
 D

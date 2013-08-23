@@ -612,7 +612,7 @@ update_shadow_buffer(NodePath light_np) {
 //               - shadow mapping
 //               - most texgen modes
 //               - texmatrix
-//               - 1D/2D/3D textures, cube textures
+//               - 1D/2D/3D textures, cube textures, 2D tex arrays
 //               - linear/exp/exp2 fog
 //
 //               Not yet supported:
@@ -955,7 +955,8 @@ synthesize_shader(const RenderState *rs) {
     text << "(tex_" << _map_index_height << ", l_texcoord" << _map_index_height << ".";
     switch (tex->get_texture_type()) {
     case Texture::TT_cube_map:
-    case Texture::TT_3d_texture: 
+    case Texture::TT_3d_texture:
+    case Texture::TT_2d_texture_array:
       text << "xyz";
       break;
     case Texture::TT_2d_texture: 
@@ -997,7 +998,8 @@ synthesize_shader(const RenderState *rs) {
       text << "(tex_" << i << ", l_texcoord" << i << ".";
       switch(tex->get_texture_type()) {
       case Texture::TT_cube_map:
-      case Texture::TT_3d_texture: 
+      case Texture::TT_3d_texture:
+      case Texture::TT_2d_texture_array:
         text << "xyz"; 
         break;
       case Texture::TT_2d_texture: 
@@ -1482,7 +1484,14 @@ combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode
       text << combine_source_as_string(stage, 1, alpha, alpha, texindex);
       break;
     case TextureStage::CM_add_signed:
-      pgraph_cat.error() << "TextureStage::CombineMode ADD_SIGNED not yet supported in per-pixel mode.\n";
+      text << combine_source_as_string(stage, 0, alpha, alpha, texindex);
+      text << " + ";
+      text << combine_source_as_string(stage, 1, alpha, alpha, texindex);
+      if (alpha) {
+        text << " - 0.5";
+      } else {
+        text << " - float3(0.5, 0.5, 0.5)";
+      }
       break;
     case TextureStage::CM_interpolate:
       text << "lerp(";
@@ -1617,6 +1626,9 @@ texture_type_as_string(Texture::TextureType ttype) {
       break;
     case Texture::TT_cube_map:
       return "CUBE";
+      break;
+    case Texture::TT_2d_texture_array:
+      return "2DARRAY";
       break;
     default:
       pgraph_cat.error() << "Unsupported texture type!\n";

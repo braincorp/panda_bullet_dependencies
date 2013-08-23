@@ -1,13 +1,9 @@
 /.cvsignore/1.1/Thu Jan 15 19:09:32 2009//
 /Sources.pp/1.17/Tue Dec  6 21:56:25 2011//
-/config_movies.cxx/1.25/Tue Dec  6 21:56:25 2011//
-/config_movies.h/1.15/Tue Nov 22 22:38:01 2011//
 /ffmpegAudio.I/1.2/Wed May 28 18:37:56 2008//
 /ffmpegAudio.cxx/1.6/Tue Dec  6 21:56:25 2011//
 /ffmpegAudio.h/1.6/Wed Jun 29 20:33:35 2011//
 /ffmpegAudioCursor.I/1.2/Wed May 28 18:37:56 2008//
-/ffmpegAudioCursor.cxx/1.16/Thu Jan  3 19:58:02 2013//
-/ffmpegAudioCursor.h/1.6/Tue Dec  6 21:56:25 2011//
 /ffmpegVideo.I/1.4/Wed May 28 18:37:56 2008//
 /ffmpegVideo.cxx/1.11/Tue Dec  6 21:56:25 2011//
 /ffmpegVideo.h/1.7/Wed Jun 29 20:33:35 2011//
@@ -15,8 +11,6 @@
 /ffmpegVideoCursor.cxx/1.34/Thu Jan  3 19:58:02 2013//
 /ffmpegVideoCursor.h/1.22/Mon Dec 12 22:33:29 2011//
 /ffmpegVirtualFile.I/1.4/Tue Nov 15 02:17:27 2011//
-/ffmpegVirtualFile.cxx/1.29/Fri Jan  4 12:05:50 2013//
-/ffmpegVirtualFile.h/1.6/Tue Dec  6 21:56:25 2011//
 /inkblotVideo.I/1.2/Wed May 28 18:37:56 2008/-kb/
 /inkblotVideo.cxx/1.8/Wed Jun 29 20:56:36 2011/-kb/
 /inkblotVideo.h/1.6/Wed Jun 29 20:49:04 2011/-kb/
@@ -47,4 +41,10 @@
 /userDataAudioCursor.I/1.2/Wed May 28 18:37:56 2008//
 /userDataAudioCursor.cxx/1.4/Wed May 11 14:12:37 2011//
 /userDataAudioCursor.h/1.5/Tue Dec  6 21:56:25 2011//
+/config_movies.cxx/1.26/Fri Aug 23 20:47:34 2013//
+/config_movies.h/1.16/Fri Aug 23 20:47:34 2013//
+/ffmpegAudioCursor.cxx/1.17/Fri Aug 23 20:47:34 2013//
+/ffmpegAudioCursor.h/1.7/Fri Aug 23 20:47:34 2013//
+/ffmpegVirtualFile.cxx/1.32/Fri Aug 23 20:47:35 2013//
+/ffmpegVirtualFile.h/1.7/Fri Aug 23 20:47:35 2013//
 D

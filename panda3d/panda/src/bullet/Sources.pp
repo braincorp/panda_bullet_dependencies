@@ -35,6 +35,7 @@
     bulletHelper.h bulletHelper.I \
     bulletHingeConstraint.h bulletHingeConstraint.I \
     bulletManifoldPoint.h bulletManifoldPoint.I \
+    bulletMinkowskiSumShape.h bulletMinkowskiSumShape.I \
     bulletMultiSphereShape.h bulletMultiSphereShape.I \
     bulletPersistentManifold.h bulletPersistentManifold.I \
     bulletPlaneShape.h bulletPlaneShape.I \
@@ -42,6 +43,7 @@
     bulletShape.h bulletShape.I \
     bulletSliderConstraint.h bulletSliderConstraint.I \
     bulletSoftBodyConfig.h bulletSoftBodyConfig.I \
+    bulletSoftBodyControl.h bulletSoftBodyControl.I \
     bulletSoftBodyMaterial.h bulletSoftBodyMaterial.I \
     bulletSoftBodyNode.h bulletSoftBodyNode.I \
     bulletSoftBodyShape.h bulletSoftBodyShape.I \
@@ -83,6 +85,7 @@
     bulletHelper.cxx \
     bulletHingeConstraint.cxx \
     bulletManifoldPoint.cxx \
+    bulletMinkowskiSumShape.cxx \
     bulletMultiSphereShape.cxx \
     bulletPersistentManifold.cxx \
     bulletPlaneShape.cxx \
@@ -90,6 +93,7 @@
     bulletShape.cxx \
     bulletSliderConstraint.cxx \
     bulletSoftBodyConfig.cxx \
+    bulletSoftBodyControl.cxx \
     bulletSoftBodyMaterial.cxx \
     bulletSoftBodyNode.cxx \
     bulletSoftBodyShape.cxx \
@@ -131,6 +135,7 @@
     bulletHelper.h bulletHelper.I \
     bulletHingeConstraint.h bulletHingeConstraint.I \
     bulletManifoldPoint.h bulletManifoldPoint.I \
+    bulletMinkowskiSumShape.h bulletMinkowskiSumShape.I \
     bulletMultiSphereShape.h bulletMultiSphereShape.I \
     bulletPersistentManifold.h bulletPersistentManifold.I \
     bulletPlaneShape.h bulletPlaneShape.I \
@@ -138,6 +143,7 @@
     bulletShape.h bulletShape.I \
     bulletSliderConstraint.h bulletSliderConstraint.I \
     bulletSoftBodyConfig.h bulletSoftBodyConfig.I \
+    bulletSoftBodyControl.h bulletSoftBodyControl.I \
     bulletSoftBodyMaterial.h bulletSoftBodyMaterial.I \
     bulletSoftBodyNode.h bulletSoftBodyNode.I \
     bulletSoftBodyShape.h bulletSoftBodyShape.I \

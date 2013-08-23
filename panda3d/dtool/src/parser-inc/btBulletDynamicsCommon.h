@@ -51,6 +51,7 @@ class btManifoldArray;
 class btManifoldPoint;
 class btMatrix3x3;
 class btMotionState;
+class btMinkowskiSumShape;
 class btMultiSphereShape;
 class btOverlapFilterCallback;
 class btPairCachingGhostObject;
@@ -114,6 +115,9 @@ public:
   struct Link;
   struct Material;
   struct Node;
+  struct AJoint {
+    struct IControl;
+  };
 };
 
 // BulletCollision/CollisionDispatch/btCollisionObject.h

@@ -184,7 +184,7 @@ PUBLISHED:
                          bool other_missing_is_old = true) const;
   time_t get_timestamp() const;
   time_t get_access_timestamp() const;
-  off_t get_file_size() const;
+  streamsize get_file_size() const;
 
   bool resolve_filename(const DSearchPath &searchpath,
                         const string &default_extension = string());
@@ -213,8 +213,8 @@ PUBLISHED:
   bool chdir() const;
   bool touch() const;
   bool unlink() const;
-  bool rename_to(const Filename &other) const;
-  bool copy_to(const Filename &other) const;
+  BLOCKING bool rename_to(const Filename &other) const;
+  BLOCKING bool copy_to(const Filename &other) const;
 
   bool make_dir() const;
   bool mkdir() const;

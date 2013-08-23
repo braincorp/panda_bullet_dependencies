@@ -1786,7 +1786,6 @@ class Packager:
 
             filename = file.newName.rsplit('.', 1)[0]
             moduleName = filename.replace("/", ".")
-            newName = moduleName
             if moduleName.endswith('.__init__'):
                 moduleName = moduleName.rsplit('.', 1)[0]
 
@@ -1795,8 +1794,7 @@ class Packager:
                 # deal with it again.
                 return
 
-            self.freezer.addModule(moduleName, newName = newName,
-                                   filename = file.filename)
+            self.freezer.addModule(moduleName, filename = file.filename)
 
         def addEggFile(self, file):
             # Precompile egg files to bam's.
@@ -2325,7 +2323,7 @@ class Packager:
         elif self.platform.startswith('osx'):
             self.remapExtensions = {
                 'dll' : 'dylib',
-                'pyd' : 'dylib',
+                'pyd' : 'so',
                 'exe' : ''
                 }
         else:

@@ -1,5 +1,4 @@
 /.cvsignore/1.4/Tue Jul  6 21:57:17 2010//
-/AppRunner.py/1.63/Fri Sep 28 20:26:22 2012//
 /DWBPackageInstaller.py/1.4/Sun Oct 25 21:39:41 2009//
 /DeploymentTools.py/1.65/Tue Oct  9 17:08:43 2012//
 /FileSpec.py/1.15/Fri Sep 23 22:10:40 2011//
@@ -10,7 +9,6 @@
 /PackageInfo.py/1.43/Fri Sep 28 20:26:22 2012//
 /PackageInstaller.py/1.13/Fri Jun 11 22:22:25 2010//
 /PackageMerger.py/1.8/Fri Sep 28 20:26:22 2012//
-/Packager.py/1.123/Fri Sep 28 20:26:22 2012//
 /PatchMaker.py/1.14/Tue Mar 15 20:31:18 2011//
 /ScanDirectoryNode.py/1.2/Fri Sep 17 11:32:53 2010//
 /SeqValue.py/1.2/Wed Jun 16 01:19:31 2010//
@@ -19,11 +17,13 @@
 /coreapi.pdef/1.18/Thu Apr 14 08:50:33 2011//
 /p3dWrapper.c/1.5/Wed Jan 20 14:35:00 2010//
 /packp3d.py/1.26/Fri Nov 16 17:09:21 2012//
-/panda3d.pdef/1.62/Fri Jan  4 14:00:53 2013//
 /pdeploy.py/1.25/Mon Oct  1 18:24:13 2012//
 /pmerge.py/1.4/Thu Sep  1 18:42:38 2011//
 /ppackage.py/1.23/Fri Nov 16 01:43:40 2012//
 /ppatcher.py/1.5/Tue Dec 22 19:22:27 2009//
 /runp3d.py/1.4/Tue Oct 13 18:56:17 2009//
-/thirdparty.pdef/1.28/Sun Mar  3 22:58:47 2013//
+/AppRunner.py/1.64/Fri Aug 23 20:48:07 2013//
+/Packager.py/1.125/Fri Aug 23 20:48:07 2013//
+/panda3d.pdef/1.63/Fri Aug 23 20:48:08 2013//
+/thirdparty.pdef/1.29/Fri Aug 23 20:48:08 2013//
 D

@@ -1,2 +1,14 @@
 /Sources.pp/1.1.1.1/Wed Oct  4 00:15:23 2000//
-D
+D/attach////
+D/cppparser////
+D/dconfig////
+D/dtoolbase////
+D/dtoolutil////
+D/interrogate////
+D/interrogatedb////
+D/newheader////
+D/parser-inc////
+D/prc////
+D/prckeys////
+D/pystub////
+D/test_interrogate////

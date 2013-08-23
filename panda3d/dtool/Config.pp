@@ -804,10 +804,11 @@
 // Is FFMPEG installed, and where?
 #define FFMPEG_IPATH /usr/include/ffmpeg
 #define FFMPEG_LPATH
-#define FFMPEG_LIBS $[if $[WINDOWS_PLATFORM],libavcodec.lib libavformat.lib libavutil.lib libgcc.lib libswscale.lib,avcodec avformat avutil swscale]
+#define FFMPEG_LIBS $[if $[WINDOWS_PLATFORM],libavcodec.lib libavformat.lib libavutil.lib libgcc.lib libswscale.lib libswresample.lib,avcodec avformat avutil swscale swresample]
 #defer HAVE_FFMPEG $[libtest $[FFMPEG_LPATH],$[FFMPEG_LIBS]]
 // Define this if you compiled ffmpeg with libswscale enabled.
 #define HAVE_SWSCALE 1
+#define HAVE_SWRESAMPLE 1
 
 // Is ODE installed, and where?
 #define ODE_IPATH
@@ -1143,7 +1144,9 @@
 // Bullet is a physics engine
 #define BULLET_IPATH /usr/local/include/bullet
 #define BULLET_LPATH /usr/local/lib
-#if $[WINDOWS_PLATFORM]
+#if $[WIN64_PLATFORM]
+#define BULLET_LIBS BulletSoftBody_x64.lib BulletDynamics_x64.lib BulletCollision_x64.lib LinearMath_x64.lib
+#elif $[WINDOWS_PLATFORM]
 #define BULLET_LIBS BulletSoftBody.lib BulletDynamics.lib BulletCollision.lib LinearMath.lib
 #else
 #define BULLET_LIBS BulletSoftBody BulletDynamics BulletCollision LinearMath

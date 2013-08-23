@@ -14,6 +14,7 @@
 
 #include "bulletSoftBodyNode.h"
 #include "bulletSoftBodyConfig.h"
+#include "bulletSoftBodyControl.h"
 #include "bulletSoftBodyMaterial.h"
 #include "bulletSoftBodyShape.h"
 #include "bulletSoftBodyWorldInfo.h"
@@ -680,7 +681,7 @@ append_anchor(int node, BulletRigidBodyNode *body, bool disable) {
 
   body->sync_p2b();
 
-  btRigidBody *ptr =(btRigidBody *)body->get_object();
+  btRigidBody *ptr = (btRigidBody *)body->get_object();
   _soft->appendAnchor(node, ptr, disable);
 }
 
@@ -698,7 +699,7 @@ append_anchor(int node, BulletRigidBodyNode *body, const LVector3 &pivot, bool d
 
   body->sync_p2b();
 
-  btRigidBody *ptr =(btRigidBody *)body->get_object();
+  btRigidBody *ptr = (btRigidBody *)body->get_object();
   _soft->appendAnchor(node, ptr, LVecBase3_to_btVector3(pivot), disable);
 }
 
@@ -1068,5 +1069,69 @@ make_tet_mesh(BulletSoftBodyWorldInfo &info, const char *ele, const char *face, 
   PT(BulletSoftBodyNode) sbnode = new BulletSoftBodyNode(body);
 
   return sbnode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSoftBodyNode::append_linear_joint
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletSoftBodyNode::
+append_linear_joint(BulletBodyNode *body, int cluster, PN_stdfloat erp, PN_stdfloat cfm, PN_stdfloat split) {
+
+  nassertv(body);
+
+  btCollisionObject *ptr = body->get_object();
+
+  btSoftBody::LJoint::Specs ls;
+  ls.erp = erp;
+  ls.cfm = cfm;
+  ls.split = split;
+  ls.position = _soft->clusterCom(cluster);
+
+  _soft->appendLinearJoint(ls, ptr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSoftBodyNode::append_linear_joint
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletSoftBodyNode::
+append_linear_joint(BulletBodyNode *body, const LPoint3 &pos, PN_stdfloat erp, PN_stdfloat cfm, PN_stdfloat split) {
+
+  nassertv(body);
+
+  btCollisionObject *ptr = body->get_object();
+
+  btSoftBody::LJoint::Specs ls;
+  ls.erp = erp;
+  ls.cfm = cfm;
+  ls.split = split;
+  ls.position = LVecBase3_to_btVector3(pos);
+
+  _soft->appendLinearJoint(ls, ptr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSoftBodyNode::append_angular_joint
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletSoftBodyNode::
+append_angular_joint(BulletBodyNode *body, const LVector3 &axis, PN_stdfloat erp, PN_stdfloat cfm, PN_stdfloat split, BulletSoftBodyControl *control) {
+
+  nassertv(body);
+
+  btCollisionObject *ptr = body->get_object();
+
+  btSoftBody::AJoint::Specs as;
+  as.erp = erp;
+  as.cfm = cfm;
+  as.split = split;
+  as.axis = LVecBase3_to_btVector3(axis);
+  as.icontrol = control ? control : btSoftBody::AJoint::IControl::Default();
+
+  _soft->appendAngularJoint(as, ptr);
 }
 

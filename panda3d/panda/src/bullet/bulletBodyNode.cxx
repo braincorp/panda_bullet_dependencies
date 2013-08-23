@@ -165,7 +165,7 @@ output(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-add_shape(BulletShape *shape, CPT(TransformState) ts) {
+add_shape(BulletShape *shape, const TransformState *ts) {
 
   nassertv(get_object());
 
@@ -173,10 +173,13 @@ add_shape(BulletShape *shape, CPT(TransformState) ts) {
     && ((btConvexHullShape *)shape->ptr())->getNumVertices() == 0));
 
   // Transform
-  btTransform trans = btTransform::getIdentity();
-  if (ts) {
-    trans = TransformState_to_btTrans(ts);
-  }
+  btTransform trans = TransformState_to_btTrans(ts);
+
+  // Reset the shape scaling before we add a shape, and remember the current
+  // Scale so we can restore it later...
+  NodePath np = NodePath::any_path((PandaNode *)this);
+  LVector3 scale = np.get_scale();
+  np.set_scale(1.0);
 
   // Root shape
   btCollisionShape *previous = get_object()->getCollisionShape();
@@ -186,12 +189,15 @@ add_shape(BulletShape *shape, CPT(TransformState) ts) {
     nassertv(previous->getShapeType() == EMPTY_SHAPE_PROXYTYPE);
 
     if (ts) {
-      // One shape, with transform
+      // After adding the shape we will have a total of one shape, without 
+      // local transform. We can set the shape directly.
       next = new btCompoundShape();
       ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
     }
     else {
-      // One shape, w/o transform
+      // After adding the shape we will have one shape, but with transform.
+      // We need to wrap the shape within a compound shape, in oder to
+      // be able to set the local transform.
       next = shape->ptr();
     }
 
@@ -201,30 +207,41 @@ add_shape(BulletShape *shape, CPT(TransformState) ts) {
     delete previous;
   }
   else if (_shapes.size() == 1) {
-    // Two shapes. Previous shape might already be a compound.
     if (previous->getShapeType() == COMPOUND_SHAPE_PROXYTYPE) {
+      // We have one shape, and add another shape. The previous shape is
+      // already a compound shape. So we just need to add the second shape
+      // to the compound shape.
       next = previous;
+
+      ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
     }
     else {
+      // We have one shape which is NOT a compound shape, and want to add
+      // a second shape. We need to wrap both shapes within a compound shape.
       next = new btCompoundShape();
 
       btTransform previous_trans = btTransform::getIdentity();
       ((btCompoundShape *)next)->addChildShape(previous_trans, previous);
+      ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
+
+      get_object()->setCollisionShape(next);
+      _shape = next;
     }
-
-    ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
-
-    get_object()->setCollisionShape(next);
-    _shape = next;
   }
   else {
-    // Three or more shapes. Previous shape is always a compound
+    // We already have two or more shapes, and want to add another. So we
+    // already have a compound shape as wrapper, and just need to add the
+    // new shape to the compound.
     nassertv(previous->getShapeType() == COMPOUND_SHAPE_PROXYTYPE);
 
-    ((btCompoundShape *)previous)->addChildShape(trans, shape->ptr());
+    next = previous;
+    ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
   }
 
   _shapes.push_back(shape);
+
+  // Restore the local scaling again
+  np.set_scale(scale);
 
   shape_changed();
 }
@@ -633,5 +650,20 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
   if (mesh && mesh->get_num_triangles() > 0) {
     add_shape(new BulletTriangleMeshShape(mesh, true));
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::set_transform_dirty
+//       Access: Published
+//  Description: This method enforces an update of the Bullet
+//               transform, that is copies the scene graph transform
+//               to the Bullet transform.
+//               This is achieved by alling the protected PandaNode 
+//               hook 'transform_changed'. 
+////////////////////////////////////////////////////////////////////
+void BulletBodyNode::
+set_transform_dirty() {
+
+  transform_changed();
 }
 

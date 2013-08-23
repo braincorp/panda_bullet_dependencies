@@ -79,7 +79,7 @@ clear() {
   _x_size = 0;
   _y_size = 0;
   _scale = 1.0;
-  _num_channels = 3;
+  _num_channels = 0;
   _table.clear();
   clear_no_data_value();
 }
@@ -87,11 +87,16 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::clear
 //       Access: Published
-//  Description: Resets to an empty table with a specific size.
+//  Description: Resets to an empty table with a specific size.  The
+//               case of num_channels == 0 is allowed only in the case
+//               that x_size and y_size are also == 0; and this makes
+//               an empty (and invalid) PfmFile.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 clear(int x_size, int y_size, int num_channels) {
   nassertv(x_size >= 0 && y_size >= 0);
+  nassertv(num_channels > 0 && num_channels <= 4 || (x_size == 0 && y_size == 0 && num_channels == 0));
+
   _x_size = x_size;
   _y_size = y_size;
   _scale = 1.0;
@@ -262,7 +267,7 @@ write(ostream &out, const Filename &fullpath) {
     return false;
   }
 
-  PNMWriter *writer = make_writer(fullpath);
+  PNMWriter *writer = make_writer(&out, false, fullpath);
   if (writer == (PNMWriter *)NULL) {
     return false;
   }
@@ -323,25 +328,7 @@ load(const PNMImage &pnmimage) {
     return false;
   }
 
-  // Get the number of channels, ignoring alpha.
-  int num_channels;
-  switch (pnmimage.get_num_channels()) {
-  case 4:
-    num_channels = 4;
-    break;
-
-  case 3:
-    num_channels = 3;
-    break;
-
-  case 2:
-  case 1:
-    num_channels = 1;
-    break;
-
-  default:
-    num_channels = 3;
-  }
+  int num_channels = pnmimage.get_num_channels();
 
   clear(pnmimage.get_x_size(), pnmimage.get_y_size(), num_channels);
   switch (num_channels) {
@@ -350,6 +337,18 @@ load(const PNMImage &pnmimage) {
       for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
         for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
           _table[yi * _x_size + xi] = pnmimage.get_gray(xi, yi);
+        }
+      }
+    }
+    break;
+
+  case 2:
+    {
+      for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
+        for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
+          PN_float32 *point = &_table[(yi * _x_size + xi) * _num_channels];
+          point[0] = pnmimage.get_gray(xi, yi);
+          point[1] = pnmimage.get_alpha(xi, yi);
         }
       }
     }
@@ -417,11 +416,23 @@ store(PNMImage &pnmimage) const {
     }
     break;
 
+  case 2:
+    {
+      for (int yi = 0; yi < get_y_size(); ++yi) {
+        for (int xi = 0; xi < get_x_size(); ++xi) {
+          const LPoint2f &point = get_point2(xi, yi);
+          pnmimage.set_gray(xi, yi, point[0]);
+          pnmimage.set_alpha(xi, yi, point[1]);
+        }
+      }
+    }
+    break;
+
   case 3:
     {
       for (int yi = 0; yi < get_y_size(); ++yi) {
         for (int xi = 0; xi < get_x_size(); ++xi) {
-          const LPoint3f &point = get_point(xi, yi);
+          const LPoint3f &point = get_point3(xi, yi);
           pnmimage.set_xel(xi, yi, point[0], point[1], point[2]);
         }
       }
@@ -521,6 +532,95 @@ fill(const LPoint4f &value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_nan
+//       Access: Published
+//  Description: Fills the table with all NaN.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_nan() {
+  PN_float32 nan = make_nan((PN_float32)0.0);
+  LPoint4f nan4(nan, nan, nan, nan);
+  fill(nan4);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_no_data_value
+//       Access: Published
+//  Description: Fills the table with the current no_data value, so
+//               that the table is empty.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_no_data_value() {
+  fill(_no_data_value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_channel
+//       Access: Published
+//  Description: Fills the indicated channel with all of the same
+//               value, leaving the other channels unchanged.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_channel(int channel, PN_float32 value) {
+  nassertv(channel >= 0 && channel < _num_channels);
+
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      _table[(yi * _x_size + xi) * _num_channels + channel] = value;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_channel_nan
+//       Access: Published
+//  Description: Fills the indicated channel with NaN, leaving the
+//               other channels unchanged.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_channel_nan(int channel) {
+  PN_float32 nan = make_nan((PN_float32)0.0);
+  fill_channel(channel, nan);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_channel_masked
+//       Access: Published
+//  Description: Fills the indicated channel with all of the same
+//               value, but only where the table already has a data
+//               point.  Leaves empty points unchanged.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_channel_masked(int channel, PN_float32 value) {
+  nassertv(channel >= 0 && channel < _num_channels);
+
+  if (!_has_no_data_value) {
+    fill_channel(channel, value);
+  } else {
+    for (int yi = 0; yi < _y_size; ++yi) {
+      for (int xi = 0; xi < _x_size; ++xi) {
+        if (has_point(xi, yi)) {
+          _table[(yi * _x_size + xi) * _num_channels + channel] = value;
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_channel_masked_nan
+//       Access: Published
+//  Description: Fills the indicated channel with NaN, but only where
+//               the table already has a data point.  Leaves empty
+//               points unchanged.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_channel_masked_nan(int channel) {
+  PN_float32 nan = make_nan((PN_float32)0.0);
+  fill_channel_masked(channel, nan);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::calc_average_point
 //       Access: Published
 //  Description: Computes the unweighted average point of all points
@@ -607,6 +707,56 @@ calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radi
   }
 
   result /= PN_float32(size);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::calc_bilinear_point
+//       Access: Published
+//  Description: Computes the weighted average of the four nearest
+//               points to the floating-point index (x, y).  Returns
+//               true if the point has any contributors, false if the
+//               point is unknown.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+calc_bilinear_point(LPoint3f &result, PN_float32 x, PN_float32 y) const {
+  result = LPoint3f::zero();
+
+  x = (x * _x_size - 0.5);
+  y = (y * _y_size - 0.5);
+
+  int min_x = int(floor(x));
+  int min_y = int(floor(y));
+
+  PN_float32 frac_x = x - min_x;
+  PN_float32 frac_y = y - min_y;
+
+  LPoint3f p00, p01, p10, p11;
+  PN_float32 w00 = 0.0, w01 = 0.0, w10 = 0.0, w11 = 0.0;
+
+  if (has_point(min_x, min_y)) {
+    w00 = (1.0 - frac_y) * (1.0 - frac_x);
+    p00 = get_point(min_x, min_y);
+  }
+  if (has_point(min_x + 1, min_y)) {
+    w10 = (1.0 - frac_y) * frac_x;
+    p10 = get_point(min_x + 1, min_y);
+  }
+  if (has_point(min_x, min_y + 1)) {
+    w01 = frac_y * (1.0 - frac_x);
+    p01 = get_point(min_x, min_y + 1);
+  }
+  if (has_point(min_x + 1, min_y + 1)) {
+    w11 = frac_y * frac_x;
+    p11 = get_point(min_x + 1, min_y + 1);
+  }
+
+  PN_float32 net_w = w00 + w01 + w10 + w11;
+  if (net_w == 0.0) {
+    return false;
+  }
+
+  result = (p00 * w00 + p01 * w01 + p10 * w10 + p11 * w11) / net_w;
   return true;
 }
 
@@ -743,6 +893,48 @@ is_column_empty(int x, int y_begin, int y_end) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_no_data_nan
+//       Access: Published
+//  Description: Sets the no_data_nan flag.  When num_channels is
+//               nonzero, then a NaN value in any of the first
+//               num_channels channels indicates no data for that
+//               point.  If num_channels is zero, then all points are
+//               valid.
+//
+//               This is a special case of set_no_data_value().
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+set_no_data_nan(int num_channels) {
+  if (num_channels > 0) {
+    num_channels = min(num_channels, _num_channels);
+    _has_no_data_value = true;
+    _no_data_value = LPoint4f::zero();
+    PN_float32 nan = make_nan((PN_float32)0.0);
+    for (int i = 0; i < num_channels; ++i) {
+      _no_data_value[i] = nan;
+    }
+    switch (num_channels) {
+    case 1:
+      _has_point = has_point_nan_1;
+      break;
+    case 2:
+      _has_point = has_point_nan_2;
+      break;
+    case 3:
+      _has_point = has_point_nan_3;
+      break;
+    case 4:
+      _has_point = has_point_nan_4;
+      break;
+    default:
+      nassertv(false);
+    }
+  } else {
+    clear_no_data_value();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::set_no_data_value
 //       Access: Published
 //  Description: Sets the special value that means "no data" when it
@@ -750,11 +942,16 @@ is_column_empty(int x, int y_begin, int y_end) const {
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 set_no_data_value(const LPoint4f &no_data_value) {
+  nassertv(is_valid());
+
   _has_no_data_value = true;
   _no_data_value = no_data_value;
   switch (_num_channels) {
   case 1:
     _has_point = has_point_1;
+    break;
+  case 2:
+    _has_point = has_point_2;
     break;
   case 3:
     _has_point = has_point_3;
@@ -788,14 +985,22 @@ resize(int new_x_size, int new_y_size) {
 
   PfmFile result;
   result.clear(new_x_size, new_y_size, _num_channels);
+  if (_has_no_data_value) {
+    result.fill(_no_data_value);
+  }
 
-  if (new_x_size < _x_size && new_y_size < _y_size) {
+  if (pfm_resize_quick && new_x_size <= _x_size && new_y_size <= _y_size) {
     // If we're downscaling, we can use quick_filter, which is faster.
     result.quick_filter_from(*this);
-
+    
   } else {
-    // Otherwise, we should use box_filter(), which is more general.
-    result.box_filter_from(0.5, *this);
+    // Otherwise, we should use box_filter() or gaussian_filter, which
+    // are more general.
+    if (pfm_resize_gaussian) {
+      result.gaussian_filter_from(pfm_resize_radius, *this);
+    } else {
+      result.box_filter_from(pfm_resize_radius, *this);
+    }
   }
 
   _table.swap(result._table);
@@ -854,6 +1059,32 @@ quick_filter_from(const PfmFile &from) {
           PN_float32 result;
           from.box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
           new_data.push_back(result);
+          
+          from_x0 = from_x1;
+        }
+        from_y0 = from_y1;
+      }
+    }
+    break;
+
+  case 2:
+    {
+      from_y0 = 0.0;
+      for (int to_y = 0; to_y < _y_size; ++to_y) {
+        from_y1 = (to_y + 1.0) * y_scale;
+        from_y1 = min(from_y1, (PN_float32)orig_y_size);
+        
+        from_x0 = 0.0;
+        for (int to_x = 0; to_x < _x_size; ++to_x) {
+          from_x1 = (to_x + 1.0) * x_scale;
+          from_x1 = min(from_x1, (PN_float32)orig_x_size);
+          
+          // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
+          // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
+          LPoint2f result;
+          from.box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
+          new_data.push_back(result[0]);
+          new_data.push_back(result[1]);
           
           from_x0 = from_x1;
         }
@@ -1039,15 +1270,21 @@ xform(const LMatrix4f &transform) {
 //  Description: Applies the distortion indicated in the supplied dist
 //               map to the current map.  The dist map is understood
 //               to be a mapping of points in the range 0..1 in the
-//               first two dimensions.  Each (u,v) point in the
-//               current file is replaced with the point from the same
-//               file at (x,y), where (x,y) is the point value from
-//               the dist map.
+//               first two dimensions.  
+//
+//               The operation can be expressed symbolically as:
+//
+//               this(u, v) = this(dist(u, v))
 //
 //               If scale_factor is not 1, it should be a value > 1,
 //               and it specifies the factor to upscale the working
 //               table while processing, to reduce artifacts from
 //               integer truncation.
+//
+//               By convention, the y axis is inverted in the
+//               distortion map relative to the coordinates here.  A y
+//               value of 0 in the distortion map corresponds with a v
+//               value of 1 in this file.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
@@ -1089,18 +1326,11 @@ forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
         continue;
       }
       LPoint2f uv = dist_p->get_point2(xi, yi);
-      int dist_xi = (int)cfloor(uv[0] * (PN_float32)working_x_size);
-      int dist_yi = (int)cfloor(uv[1] * (PN_float32)working_y_size);
-      if (dist_xi < 0 || dist_xi >= working_x_size || 
-          dist_yi < 0 || dist_yi >= working_y_size) {
+      LPoint3f p;
+      if (!source_p->calc_bilinear_point(p, uv[0], 1.0 - uv[1])) {
         continue;
       }
-
-      if (!source_p->has_point(dist_xi, dist_yi)) {
-        continue;
-      }
-
-      result.set_point(xi, yi, source_p->get_point(dist_xi, dist_yi));
+      result.set_point(xi, working_y_size - 1 - yi, p);
     }
   }
 
@@ -1117,15 +1347,21 @@ forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
 //  Description: Applies the distortion indicated in the supplied dist
 //               map to the current map.  The dist map is understood
 //               to be a mapping of points in the range 0..1 in the
-//               first two dimensions.  Each (x,y) point in the
-//               current file is replaced with the point from the same
-//               file at (u,v), where (x,y) is the point value from
-//               the dist map.
+//               first two dimensions.
+//
+//               The operation can be expressed symbolically as:
+//
+//               this(u, v) = dist(this(u, v))
 //
 //               If scale_factor is not 1, it should be a value > 1,
 //               and it specifies the factor to upscale the working
 //               table while processing, to reduce artifacts from
 //               integer truncation.
+//
+//               By convention, the y axis in inverted in the
+//               distortion map relative to the coordinates here.  A y
+//               value of 0 in the distortion map corresponds with a v
+//               value of 1 in this file.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 reverse_distort(const PfmFile &dist, PN_float32 scale_factor) {
@@ -1166,22 +1402,12 @@ reverse_distort(const PfmFile &dist, PN_float32 scale_factor) {
       if (!source_p->has_point(xi, yi)) {
         continue;
       }
-      if (!dist_p->has_point(xi, yi)) {
+      LPoint2f uv = source_p->get_point2(xi, yi);
+      LPoint3f p;
+      if (!dist_p->calc_bilinear_point(p, uv[0], 1.0 - uv[1])) {
         continue;
       }
-      LPoint2f uv = dist_p->get_point2(xi, yi);
-      int dist_xi = (int)cfloor(uv[0] * (PN_float32)working_x_size);
-      int dist_yi = (int)cfloor(uv[1] * (PN_float32)working_y_size);
-      if (dist_xi < 0 || dist_xi >= working_x_size || 
-          dist_yi < 0 || dist_yi >= working_y_size) {
-        continue;
-      }
-
-      if (!source_p->has_point(dist_xi, dist_yi)) {
-        continue;
-      }
-
-      result.set_point(dist_xi, dist_yi, source_p->get_point(xi, yi));
+      result.set_point(xi, yi, LPoint3f(p[0], 1.0 - p[1], p[2]));
     }
   }
 
@@ -1235,7 +1461,7 @@ copy_channel(int to_channel, const PfmFile &other, int from_channel) {
 
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
-      set_component(xi, yi, to_channel, other.get_component(xi, yi, from_channel));
+      set_channel(xi, yi, to_channel, other.get_channel(xi, yi, from_channel));
     }
   }
 }
@@ -1295,14 +1521,53 @@ clear_to_texcoords(int x_size, int y_size) {
 
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
-      LPoint3f uv(PN_float32(xi) * uv_scale[0] + 0.5,
-                  PN_float32(yi) * uv_scale[1] + 0.5, 
+      LPoint3f uv((PN_float32(xi) + 0.5) * uv_scale[0],
+                  (PN_float32(yi) + 0.5) * uv_scale[1],
                   0.0f);
       set_point(xi, yi, uv);
     }
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::pull_spot
+//       Access: Published
+//  Description: Applies delta * t to the point values within radius
+//               (xr, yr) distance of (xc, yc).  The t value is scaled
+//               from 1.0 at the center to 0.0 at radius (xr, yr), and
+//               this scale follows the specified exponent.  Returns
+//               the number of points affected.
+////////////////////////////////////////////////////////////////////
+int PfmFile::
+pull_spot(const LPoint4f &delta, double xc, double yc, 
+          double xr, double yr, double exponent) {
+  int minx = max((int)cceil(xc - xr), 0);
+  int maxx = min((int)cfloor(xc + xr), _x_size - 1);
+  int miny = max((int)cceil(yc - yr), 0);
+  int maxy = min((int)cfloor(yc + yr), _y_size - 1);
+
+  int count = 0;
+  for (int yi = miny; yi <= maxy; ++yi) {
+    for (int xi = minx; xi <= maxx; ++xi) {
+      double xd = ((double)xi - xc) / xr;
+      double yd = ((double)yi - yc) / yr;
+      double r2 = xd * xd + yd * yd;
+      if (r2 >= 1.0) {
+        continue;
+      }
+      PN_float32 t = (PN_float32)pow(1.0 - sqrt(r2), exponent);
+
+      PN_float32 *f = &_table[(yi * _x_size + xi) * _num_channels];
+      for (int ci = 0; ci < _num_channels; ++ci) {
+        f[ci] += delta[ci] * t;
+      }
+      ++count;
+    }
+  }
+
+  return count;
+}
+  
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::calc_tight_bounds
 //       Access: Published
@@ -1332,11 +1597,11 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) const {
         found_any = true;
       } else {
         min_point.set(min(min_point[0], point[0]),
-                      min(min_point[0], point[0]),
-                      min(min_point[0], point[0]));
+                      min(min_point[1], point[1]),
+                      min(min_point[2], point[2]));
         max_point.set(max(max_point[0], point[0]),
-                      max(max_point[0], point[0]),
-                      max(max_point[0], point[0]));
+                      max(max_point[1], point[1]),
+                      max(max_point[2], point[2]));
       }
     }
   }
@@ -1537,6 +1802,14 @@ compute_sample_point(LPoint3f &result,
     }
     break;
 
+  case 2:
+    {
+      LPoint2f result2;
+      box_filter_region(result2, x - xr, y - yr, x + xr, y + yr);
+      result.set(result2[0], result2[1], 0.0);
+    }
+    break;
+
   case 3:
     box_filter_region(result, x - xr, y - yr, x + xr, y + yr);
     break;
@@ -1640,6 +1913,51 @@ void PfmFile::
 box_filter_region(PN_float32 &result,
                   PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
   result = 0.0;
+  PN_float32 coverage = 0.0;
+
+  if (x1 < x0 || y1 < y0) {
+    return;
+  }
+  nassertv(y0 >= 0.0 && y1 >= 0.0);
+
+  int y = (int)y0;
+  // Get the first (partial) row
+  box_filter_line(result, coverage, x0, y, x1, (PN_float32)(y+1)-y0);
+
+  int y_last = (int)y1;
+  if (y < y_last) {
+    y++;
+    while (y < y_last) {
+      // Get each consecutive (complete) row
+      box_filter_line(result, coverage, x0, y, x1, 1.0);
+      y++;
+    }
+
+    // Get the final (partial) row
+    PN_float32 y_contrib = y1 - (PN_float32)y_last;
+    if (y_contrib > 0.0001) {
+      box_filter_line(result, coverage, x0, y, x1, y_contrib);
+    }
+  }
+
+  if (coverage != 0.0) {
+    result /= coverage;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_region
+//       Access: Private
+//  Description: Averages all the points in the rectangle from x0
+//               .. y0 to x1 .. y1 into result.  The region may be
+//               defined by floating-point boundaries; the result will
+//               be weighted by the degree of coverage of each
+//               included point.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+box_filter_region(LPoint2f &result,
+                  PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
+  result = LPoint2f::zero();
   PN_float32 coverage = 0.0;
 
   if (x1 < x0 || y1 < y0) {
@@ -1797,6 +2115,35 @@ box_filter_line(PN_float32 &result, PN_float32 &coverage,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
+box_filter_line(LPoint2f &result, PN_float32 &coverage,
+                PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
+  int x = (int)x0;
+  // Get the first (partial) xel
+  box_filter_point(result, coverage, x, y, (PN_float32)(x+1)-x0, y_contrib);
+
+  int x_last = (int)x1;
+  if (x < x_last) {
+    x++;
+    while (x < x_last) {
+      // Get each consecutive (complete) xel
+      box_filter_point(result, coverage, x, y, 1.0, y_contrib);
+      x++;
+    }
+
+    // Get the final (partial) xel
+    PN_float32 x_contrib = x1 - (PN_float32)x_last;
+    if (x_contrib > 0.0001) {
+      box_filter_point(result, coverage, x, y, x_contrib, y_contrib);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_line
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PfmFile::
 box_filter_line(LPoint3f &result, PN_float32 &coverage,
                 PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
   int x = (int)x0;
@@ -1873,12 +2220,30 @@ box_filter_point(PN_float32 &result, PN_float32 &coverage,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
+box_filter_point(LPoint2f &result, PN_float32 &coverage,
+                 int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const {
+  if (!has_point(x, y)) {
+    return;
+  }
+  const LPoint2f &point = get_point2(x, y);
+
+  PN_float32 contrib = x_contrib * y_contrib;
+  result += point * contrib;
+  coverage += contrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_point
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PfmFile::
 box_filter_point(LPoint3f &result, PN_float32 &coverage,
                  int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const {
   if (!has_point(x, y)) {
     return;
   }
-  const LPoint3f &point = get_point(x, y);
+  const LPoint3f &point = get_point3(x, y);
 
   PN_float32 contrib = x_contrib * y_contrib;
   result += point * contrib;
@@ -1962,6 +2327,21 @@ has_point_1(const PfmFile *self, int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_2
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 2-component
+//               files with a no_data_value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_2(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return *(LPoint2f *)&self->_table[(y * self->_x_size + x) * 2] != *(LPoint2f *)&self->_no_data_value;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::has_point_3
 //       Access: Private, Static
 //  Description: The implementation of has_point() for 3-component
@@ -2003,6 +2383,70 @@ has_point_chan4(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) && 
       (y >= 0 && y < self->_y_size)) {
     return self->_table[(y * self->_x_size + x) * 4 + 3] >= 0.0;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_nan_1
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 
+//               files with set_no_data_nan() in effect.  This means
+//               that the data is valid iff no components involve NaN.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_nan_1(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return !cnan(self->_table[(y * self->_x_size + x) * self->_num_channels]);
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_nan_2
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 
+//               files with set_no_data_nan() in effect.  This means
+//               that the data is valid iff no components involve NaN.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_nan_2(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return !((LVecBase2f *)&self->_table[(y * self->_x_size + x) * self->_num_channels])->is_nan();
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_nan_3
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 
+//               files with set_no_data_nan() in effect.  This means
+//               that the data is valid iff no components involve NaN.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_nan_3(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return !((LVecBase3f *)&self->_table[(y * self->_x_size + x) * self->_num_channels])->is_nan();
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_nan_4
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 
+//               files with set_no_data_nan() in effect.  This means
+//               that the data is valid iff no components involve NaN.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_nan_4(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return !((LVecBase4f *)&self->_table[(y * self->_x_size + x) * self->_num_channels])->is_nan();
   }
   return false;
 }

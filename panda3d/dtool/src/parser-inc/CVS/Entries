@@ -28,7 +28,6 @@
 /avformat.h/1.1/Sun May 14 22:14:13 2006//
 /avio.h/1.4/Wed Jun 29 20:32:58 2011//
 /avutil.h/1.1/Sun May 14 22:14:14 2006//
-/btBulletDynamicsCommon.h/1.8/Tue Mar 26 09:35:30 2013//
 /cg.h/1.2/Wed May 28 18:37:26 2008//
 /cgGL.h/1.2/Wed May 28 18:37:26 2008//
 /collision_trimesh.h/1.1/Tue Jan 30 06:04:00 2007//
@@ -115,9 +114,15 @@
 /tinyxml.h/1.1/Tue Oct 13 21:28:18 2009//
 /ucontext.h/1.2/Wed May 28 18:37:26 2008//
 /vector/1.4/Wed May 28 18:59:43 2008//
-/windows.h/1.13/Wed Apr 22 22:43:23 2009//
 /winsock2.h/1.2/Tue Nov 14 04:11:50 2006//
 /x509.h/1.1/Mon Jan  3 21:50:28 2005//
 /x509v3.h/1.1/Fri Oct  9 19:03:00 2009//
 /zlib.h/1.4/Wed May 28 18:37:26 2008//
-D
+D/AR////
+D/libavcodec////
+D/libavformat////
+D/libavutil////
+D/libswscale////
+D/ode////
+/btBulletDynamicsCommon.h/1.10/Fri Aug 23 20:47:05 2013//
+/windows.h/1.14/Fri Aug 23 20:47:05 2013//
