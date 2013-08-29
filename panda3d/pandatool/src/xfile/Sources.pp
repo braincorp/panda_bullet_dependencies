@@ -1,5 +1,5 @@
 #define YACC_PREFIX xyy
-#define LFLAGS -i
+#define FLEXFLAGS -i
 
 #define USE_PACKAGES zlib
 

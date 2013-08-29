@@ -18,6 +18,6 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 
-NotifyCategoryDecl(vrpn, EXPCL_PANDA_VRPN, EXPTP_PANDA_VRPN);
+NotifyCategoryDecl(vrpn, EXPCL_VRPN, EXPTP_VRPN);
 
 #endif

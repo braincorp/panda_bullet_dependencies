@@ -189,16 +189,16 @@
 /videoTexture.I/1.6/Mon Jan 17 18:31:11 2011//
 /videoTexture.cxx/1.10/Mon Nov 28 21:42:44 2011//
 /videoTexture.h/1.12/Mon Nov 28 21:42:44 2011//
-/geomPrimitive.h/1.35/Fri Aug 23 20:47:29 2013//
-/geomVertexArrayData.I/1.30/Fri Aug 23 20:47:29 2013//
-/geomVertexData.cxx/1.53/Fri Aug 23 20:47:29 2013//
-/geomVertexFormat.cxx/1.21/Fri Aug 23 20:47:29 2013//
-/geomVertexFormat.h/1.12/Fri Aug 23 20:47:29 2013//
-/lens.I/1.16/Fri Aug 23 20:47:29 2013//
-/lens.cxx/1.49/Fri Aug 23 20:47:30 2013//
-/lens.h/1.28/Fri Aug 23 20:47:30 2013//
-/shader.I/1.19/Fri Aug 23 20:47:30 2013//
-/shader.cxx/1.65/Fri Aug 23 20:47:30 2013//
 /shader.h/1.41/Fri Jul 26 08:11:29 2013//
-/texture.cxx/1.237/Fri Aug 23 20:47:30 2013//
+/geomPrimitive.h/1.35/Thu Aug 29 08:47:09 2013//
+/geomVertexArrayData.I/1.30/Thu Aug 29 08:47:09 2013//
+/geomVertexData.cxx/1.53/Thu Aug 29 08:47:09 2013//
+/geomVertexFormat.cxx/1.21/Thu Aug 29 08:47:09 2013//
+/geomVertexFormat.h/1.12/Thu Aug 29 08:47:09 2013//
+/lens.I/1.16/Thu Aug 29 08:47:09 2013//
+/lens.cxx/1.49/Thu Aug 29 08:47:09 2013//
+/lens.h/1.28/Thu Aug 29 08:47:09 2013//
+/shader.I/1.19/Thu Aug 29 08:47:09 2013//
+/shader.cxx/1.65/Thu Aug 29 08:47:09 2013//
+/texture.cxx/1.237/Thu Aug 29 08:47:09 2013//
 D

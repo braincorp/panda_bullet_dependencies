@@ -52,7 +52,7 @@ protected:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    MovieAudio::init_type();
     register_type(_type_handle, "MicrophoneAudio",
                   MovieAudio::get_class_type());
   }

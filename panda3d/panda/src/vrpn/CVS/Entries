@@ -1,7 +1,5 @@
 /.cvsignore/1.2/Mon Sep 27 22:47:01 2004//
-/Sources.pp/1.9/Tue Dec  6 02:39:32 2011//
 /config_vrpn.cxx/1.8/Wed May 28 18:38:33 2008//
-/config_vrpn.h/1.6/Wed May 28 18:38:33 2008//
 /p3vrpn_composite1.cxx/1.1/Tue Dec  6 02:39:32 2011//
 /vrpnAnalog.I/1.4/Wed May 28 18:38:33 2008//
 /vrpnAnalog.cxx/1.7/Tue Oct 14 00:07:18 2008//
@@ -17,7 +15,6 @@
 /vrpnButtonDevice.h/1.6/Wed May 28 18:38:34 2008//
 /vrpnClient.I/1.9/Mon Oct 10 05:25:19 2011//
 /vrpnClient.cxx/1.12/Wed May 28 18:38:34 2008//
-/vrpnClient.h/1.12/Wed May 28 18:38:34 2008//
 /vrpnDial.I/1.4/Wed May 28 18:38:34 2008//
 /vrpnDial.cxx/1.6/Tue Oct 14 00:07:18 2008//
 /vrpnDial.h/1.7/Wed May 28 18:38:34 2008//
@@ -31,4 +28,7 @@
 /vrpnTrackerDevice.cxx/1.5/Wed May 28 18:38:34 2008//
 /vrpnTrackerDevice.h/1.6/Wed May 28 18:38:34 2008//
 /vrpn_interface.h/1.8/Fri May 28 21:09:25 2010//
+/Sources.pp/1.10/Thu Aug 29 08:48:21 2013//
+/config_vrpn.h/1.7/Thu Aug 29 08:48:21 2013//
+/vrpnClient.h/1.13/Thu Aug 29 08:48:21 2013//
 D

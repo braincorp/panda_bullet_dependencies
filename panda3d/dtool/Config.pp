@@ -349,7 +349,7 @@
 // genPyCode.  You may wish to add to this list to add your own
 // libraries, or if you want to use some of the more obscure
 // interfaces like libpandaegg and libpandafx.
-#defer GENPYCODE_LIBS libpandaexpress libpanda libpandaphysics libp3direct libpandafx libp3vision $[if $[HAVE_ODE],libpandaode]
+#defer GENPYCODE_LIBS libpandaexpress libpanda libpandaphysics libp3direct libpandafx libp3vision $[if $[HAVE_ODE],libpandaode] $[if $[HAVE_VRPN],libp3vrpn]
 
 // Normally, Python source files are copied into the INSTALL_LIB_DIR
 // defined above, along with the compiled C++ library objects, when
@@ -804,7 +804,7 @@
 // Is FFMPEG installed, and where?
 #define FFMPEG_IPATH /usr/include/ffmpeg
 #define FFMPEG_LPATH
-#define FFMPEG_LIBS $[if $[WINDOWS_PLATFORM],libavcodec.lib libavformat.lib libavutil.lib libgcc.lib libswscale.lib libswresample.lib,avcodec avformat avutil swscale swresample]
+#define FFMPEG_LIBS $[if $[WINDOWS_PLATFORM],avcodec.lib avformat.lib avutil.lib swscale.lib swresample.lib,avcodec avformat avutil swscale swresample]
 #defer HAVE_FFMPEG $[libtest $[FFMPEG_LPATH],$[FFMPEG_LIBS]]
 // Define this if you compiled ffmpeg with libswscale enabled.
 #define HAVE_SWSCALE 1
@@ -814,6 +814,7 @@
 #define ODE_IPATH
 #define ODE_LPATH
 #define ODE_LIBS $[if $[WINDOWS_PLATFORM],ode.lib,ode]
+#define ODE_CFLAGS
 #defer HAVE_ODE $[libtest $[ODE_LPATH],$[ODE_LIBS]]
 
 // Is Awesomium installed, and where?
@@ -1152,6 +1153,12 @@
 #define BULLET_LIBS BulletSoftBody BulletDynamics BulletCollision LinearMath
 #endif
 #defer HAVE_BULLET $[libtest $[BULLET_LPATH],$[BULLET_LIBS]]
+
+// libvorbisfile is used for reading Ogg Vorbis audio files (.ogg).
+#define VORBIS_IPATH
+#define VORBIS_LPATH
+#define VORBIS_LIBS $[if $[WINDOWS_PLATFORM],libogg_static.lib libvorbis_static.lib libvorbisfile_static.lib,ogg vorbis vorbisfile]
+#defer HAVE_VORBIS $[libtest $[VORBIS_LPATH],$[VORBIS_LIBS]]
 
 // Define this to explicitly indicate the given platform string within
 // the resulting Panda runtime.  Normally it is best to leave this
