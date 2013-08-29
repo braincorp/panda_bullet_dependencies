@@ -123,4 +123,11 @@
 /x509.h/1.1/Mon Jan  3 21:50:28 2005//
 /x509v3.h/1.1/Fri Oct  9 19:03:00 2009//
 /zlib.h/1.4/Wed May 28 18:37:26 2008//
-D
+D/AR////
+D/libavcodec////
+D/libavformat////
+D/libavutil////
+D/libswscale////
+D/ode////
+D/ogg////
+D/vorbis////
