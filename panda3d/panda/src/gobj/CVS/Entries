@@ -44,6 +44,7 @@
 /geomPoints.h/1.6/Fri Apr 27 20:29:48 2012//
 /geomPrimitive.I/1.21/Sat Dec 17 01:55:53 2011//
 /geomPrimitive.cxx/1.37/Sat Dec 17 23:08:04 2011//
+/geomPrimitive.h/1.35/Thu May  2 23:17:00 2013//
 /geomTriangles.cxx/1.7/Fri Jun 17 18:57:05 2011//
 /geomTriangles.h/1.7/Fri Apr 27 20:29:48 2012//
 /geomTrifans.cxx/1.6/Wed May 28 18:37:49 2008//
@@ -53,6 +54,7 @@
 /geomVertexAnimationSpec.I/1.2/Wed May 28 18:37:49 2008//
 /geomVertexAnimationSpec.cxx/1.2/Wed May 28 18:37:49 2008//
 /geomVertexAnimationSpec.h/1.3/Wed May 28 18:37:49 2008//
+/geomVertexArrayData.I/1.30/Wed May 22 20:46:24 2013//
 /geomVertexArrayData.cxx/1.39/Sat Mar 12 21:42:34 2011//
 /geomVertexArrayData.h/1.38/Sat Mar 12 21:42:34 2011//
 /geomVertexArrayFormat.I/1.4/Sat Dec 17 23:08:04 2011//
@@ -62,8 +64,11 @@
 /geomVertexColumn.cxx/1.10/Tue Jan  8 00:19:35 2013//
 /geomVertexColumn.h/1.10/Tue Jan  8 00:19:35 2013//
 /geomVertexData.I/1.17/Sat Mar 12 21:42:34 2011//
+/geomVertexData.cxx/1.53/Thu Apr 18 23:45:10 2013//
 /geomVertexData.h/1.41/Tue Jan  8 00:19:35 2013//
 /geomVertexFormat.I/1.2/Wed May 28 18:37:49 2008//
+/geomVertexFormat.cxx/1.21/Wed May 22 20:46:24 2013//
+/geomVertexFormat.h/1.12/Wed May 22 20:46:24 2013//
 /geomVertexReader.I/1.21/Sat Dec 17 23:08:04 2011//
 /geomVertexReader.cxx/1.8/Wed Jul  9 21:31:50 2008//
 /geomVertexReader.h/1.18/Sat Dec 17 23:08:04 2011//
@@ -79,6 +84,9 @@
 /internalName.I/1.13/Wed May 28 18:37:49 2008//
 /internalName.cxx/1.18/Wed Jun 10 17:54:40 2009//
 /internalName.h/1.21/Wed Jun 10 17:54:40 2009//
+/lens.I/1.16/Tue Apr  9 01:38:22 2013//
+/lens.cxx/1.49/Tue Apr  9 01:38:22 2013//
+/lens.h/1.28/Tue Apr  9 01:38:22 2013//
 /material.I/1.13/Mon Oct 10 05:25:14 2011//
 /material.cxx/1.17/Mon Oct 10 05:25:14 2011//
 /material.h/1.15/Mon Oct 10 05:25:14 2011//
@@ -108,6 +116,9 @@
 /savedContext.I/1.3/Wed May 28 18:37:49 2008//
 /savedContext.cxx/1.4/Thu Sep  4 21:26:38 2008//
 /savedContext.h/1.8/Thu Sep  4 21:26:38 2008//
+/shader.I/1.19/Wed May 22 13:47:37 2013//
+/shader.cxx/1.65/Sun Jul 28 23:18:08 2013//
+/shader.h/1.41/Wed Mar 13 09:47:38 2013//
 /shaderContext.I/1.7/Wed May 28 18:37:50 2008//
 /shaderContext.cxx/1.9/Wed May 28 18:37:50 2008//
 /shaderContext.h/1.13/Wed May 28 18:37:50 2008//
@@ -122,6 +133,7 @@
 /sliderTable.h/1.12/Fri Nov  7 21:12:54 2008//
 /test_gobj.cxx/1.4/Wed May 28 18:37:50 2008//
 /texture.I/1.63/Sun Aug 12 17:56:56 2012//
+/texture.cxx/1.237/Mon Aug 12 14:29:40 2013//
 /texture.h/1.126/Sun Aug 12 17:56:56 2012//
 /textureCollection.I/1.2/Wed Feb 10 19:44:11 2010//
 /textureCollection.cxx/1.3/Thu Feb 11 22:38:46 2010//
@@ -189,16 +201,4 @@
 /videoTexture.I/1.6/Mon Jan 17 18:31:11 2011//
 /videoTexture.cxx/1.10/Mon Nov 28 21:42:44 2011//
 /videoTexture.h/1.12/Mon Nov 28 21:42:44 2011//
-/shader.h/1.41/Fri Jul 26 08:11:29 2013//
-/geomPrimitive.h/1.35/Thu Aug 29 08:47:09 2013//
-/geomVertexArrayData.I/1.30/Thu Aug 29 08:47:09 2013//
-/geomVertexData.cxx/1.53/Thu Aug 29 08:47:09 2013//
-/geomVertexFormat.cxx/1.21/Thu Aug 29 08:47:09 2013//
-/geomVertexFormat.h/1.12/Thu Aug 29 08:47:09 2013//
-/lens.I/1.16/Thu Aug 29 08:47:09 2013//
-/lens.cxx/1.49/Thu Aug 29 08:47:09 2013//
-/lens.h/1.28/Thu Aug 29 08:47:09 2013//
-/shader.I/1.19/Thu Aug 29 08:47:09 2013//
-/shader.cxx/1.65/Thu Aug 29 08:47:09 2013//
-/texture.cxx/1.237/Thu Aug 29 08:47:09 2013//
 D

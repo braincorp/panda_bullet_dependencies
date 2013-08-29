@@ -2,6 +2,8 @@
 /Sources.pp/1.25/Sun Aug 12 15:49:08 2012//
 /bmp.h/1.6/Wed May 28 18:38:23 2008//
 /colrops.c/1.9/Fri May 28 21:09:25 2010//
+/config_pnmimagetypes.cxx/1.27/Wed Mar  6 22:09:33 2013//
+/config_pnmimagetypes.h/1.22/Wed Mar  6 22:09:33 2013//
 /p3pnmimagetypes_composite1.cxx/1.1/Tue Dec  6 02:39:31 2011//
 /p3pnmimagetypes_composite2.cxx/1.2/Sun Aug 12 15:49:08 2012//
 /pnmFileTypeBMP.cxx/1.11/Fri Apr 24 22:56:03 2009//
@@ -14,9 +16,11 @@
 /pnmFileTypeJPG.h/1.18/Wed May 28 18:38:23 2008//
 /pnmFileTypeJPGReader.cxx/1.19/Wed Aug 13 01:13:10 2008//
 /pnmFileTypeJPGWriter.cxx/1.14/Wed May 28 18:38:23 2008//
+/pnmFileTypePNG.cxx/1.12/Wed Mar  6 22:09:34 2013//
 /pnmFileTypePNG.h/1.7/Fri Oct 10 15:07:35 2008//
 /pnmFileTypePNM.cxx/1.14/Mon Jun  1 21:51:35 2009//
 /pnmFileTypePNM.h/1.11/Fri Apr 24 22:56:03 2009//
+/pnmFileTypePfm.cxx/1.2/Fri May 10 17:28:35 2013//
 /pnmFileTypePfm.h/1.1/Sun Aug 12 15:49:08 2012//
 /pnmFileTypeSGI.cxx/1.11/Fri Apr 24 22:56:03 2009//
 /pnmFileTypeSGI.h/1.11/Fri Apr 24 22:56:03 2009//
@@ -29,8 +33,4 @@
 /pnmFileTypeTIFF.cxx/1.35/Wed Mar 28 00:13:58 2012//
 /pnmFileTypeTIFF.h/1.14/Wed May 28 18:38:24 2008//
 /sgi.h/1.5/Wed May 28 18:38:24 2008//
-/config_pnmimagetypes.cxx/1.27/Fri Jul 26 08:11:29 2013//
-/config_pnmimagetypes.h/1.22/Fri Jul 26 08:11:29 2013//
-/pnmFileTypePNG.cxx/1.12/Fri Jul 26 08:11:29 2013//
-/pnmFileTypePfm.cxx/1.2/Thu Aug 29 08:47:09 2013//
 D

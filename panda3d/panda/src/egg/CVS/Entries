@@ -1,4 +1,5 @@
 /.cvsignore/1.2/Mon Sep 27 22:44:23 2004//
+/Sources.pp/1.32/Mon Aug 26 22:47:26 2013//
 /config_egg.cxx/1.28/Fri Apr 27 20:29:48 2012//
 /config_egg.h/1.12/Mon Dec 19 14:44:38 2011//
 /eggAnimData.I/1.6/Wed May 28 18:37:39 2008//
@@ -35,6 +36,9 @@
 /eggFilenameNode.I/1.7/Wed May 28 18:37:40 2008//
 /eggFilenameNode.cxx/1.4/Wed May 28 18:37:40 2008//
 /eggFilenameNode.h/1.10/Wed May 28 18:37:40 2008//
+/eggGroup.I/1.26/Sat Aug 24 19:29:14 2013//
+/eggGroup.cxx/1.60/Sat Aug 24 19:29:14 2013//
+/eggGroup.h/1.48/Sat Aug 24 19:29:14 2013//
 /eggGroupNode.I/1.8/Wed May 28 18:37:40 2008//
 /eggGroupNode.cxx/1.58/Mon Feb 13 08:35:53 2012//
 /eggGroupNode.h/1.41/Mon Dec 19 18:16:30 2011//
@@ -162,7 +166,9 @@
 /lexerDefs.h/1.7/Wed May 28 18:37:42 2008//
 /p3egg_composite1.cxx/1.1/Tue Dec  6 02:39:28 2011//
 /p3egg_composite2.cxx/1.2/Fri Apr 27 20:29:48 2012//
+/parser.cxx.prebuilt/1.38/Sat Aug 24 19:29:14 2013//
 /parser.h.prebuilt/1.20/Fri Apr 27 20:29:48 2012//
+/parser.yxx/1.71/Sat Aug 24 19:29:15 2013//
 /parserDefs.h/1.11/Wed Oct  8 23:23:52 2008//
 /pt_EggMaterial.cxx/1.4/Wed May 28 18:37:42 2008//
 /pt_EggMaterial.h/1.5/Wed May 28 18:37:42 2008//
@@ -177,10 +183,4 @@
 /vector_PT_EggTexture.h/1.8/Wed May 28 18:37:42 2008//
 /vector_PT_EggVertex.cxx/1.5/Wed May 28 18:37:42 2008//
 /vector_PT_EggVertex.h/1.8/Wed May 28 18:37:42 2008//
-/Sources.pp/1.32/Thu Aug 29 08:47:46 2013//
-/eggGroup.I/1.26/Thu Aug 29 08:47:47 2013//
-/eggGroup.cxx/1.60/Thu Aug 29 08:47:47 2013//
-/eggGroup.h/1.48/Thu Aug 29 08:47:47 2013//
-/parser.cxx.prebuilt/1.38/Thu Aug 29 08:47:49 2013//
-/parser.yxx/1.71/Thu Aug 29 08:47:49 2013//
 D
