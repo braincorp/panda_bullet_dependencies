@@ -35,6 +35,8 @@
 /p3dCInstance.I/1.2/Tue Jun 23 19:58:46 2009//
 /p3dCInstance.cxx/1.5/Wed Jul  1 15:52:08 2009//
 /p3dCInstance.h/1.10/Fri Oct  2 00:05:22 2009//
+/p3dCert.cxx/1.25/Wed Feb 13 13:21:21 2013//
+/p3dCert.h/1.9/Wed Feb 13 11:34:01 2013//
 /p3dCert_wx.cxx/1.3/Tue Aug 30 22:45:58 2011//
 /p3dCert_wx.h/1.2/Tue Aug 30 22:45:58 2011//
 /p3dConcreteSequence.cxx/1.3/Wed Jun 29 22:18:54 2011//
@@ -98,9 +100,10 @@
 /p3dReferenceCount.cxx/1.1/Thu Jul  9 23:59:17 2009//
 /p3dReferenceCount.h/1.4/Wed Dec  9 18:21:12 2009//
 /p3dSession.I/1.4/Tue Oct 27 23:35:06 2009//
+/p3dSession.cxx/1.139/Tue Aug 13 17:34:17 2013//
 /p3dSession.h/1.43/Tue Aug 30 22:45:58 2011//
 /p3dSplashWindow.I/1.3/Fri Nov 13 01:22:05 2009//
-/p3dSplashWindow.cxx/1.26/Tue Aug 30 02:54:02 2011//
+/p3dSplashWindow.cxx/1.27/Mon Aug 26 14:45:32 2013//
 /p3dSplashWindow.h/1.18/Wed Dec  9 15:37:49 2009//
 /p3dStringObject.cxx/1.5/Thu Sep  3 02:09:21 2009//
 /p3dStringObject.h/1.5/Thu Sep  3 02:09:21 2009//
@@ -138,7 +141,4 @@
 /wstring_encode.h/1.5/Tue Aug 30 22:45:58 2011//
 /xml_helpers.cxx/1.1/Fri Sep 28 20:26:24 2012//
 /xml_helpers.h/1.1/Fri Sep 28 20:26:24 2012//
-/p3dCert.cxx/1.25/Fri Jul 26 08:11:29 2013//
-/p3dCert.h/1.9/Fri Jul 26 08:11:29 2013//
-/p3dSession.cxx/1.139/Fri Aug 23 20:48:09 2013//
 D

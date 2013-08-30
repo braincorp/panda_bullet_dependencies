@@ -1,6 +1,7 @@
 /.cvsignore/1.1/Tue Jun 16 09:40:37 2009//
 /AlignTool.py/1.1/Wed Apr  1 17:58:20 2009//
 /MetadataPanel.py/1.1/Wed Apr  1 17:58:20 2009//
+/SideWindow.py/1.2/Sat Jul 27 11:09:34 2013//
 /Sources.pp/1.1/Wed Apr  1 17:58:20 2009//
 /__init__.py/1.1/Wed Apr  1 17:58:20 2009//
 /collisionWindow.py/1.1/Wed Apr  1 17:58:20 2009//
@@ -10,6 +11,7 @@
 /lightingPanel.py/1.1/Wed Apr  1 17:58:20 2009//
 /propertyWindow.py/1.1/Wed Apr  1 17:58:20 2009//
 /quad.py/1.1/Wed Apr  1 17:58:20 2009//
+/sceneEditor.py/1.2/Sat Jul 27 11:09:34 2013//
 /seAnimPanel.py/1.1/Wed Apr  1 17:58:22 2009//
 /seBlendAnimPanel.py/1.1/Wed Apr  1 17:58:22 2009//
 /seCameraControl.py/1.1/Wed Apr  1 17:58:22 2009//
@@ -23,12 +25,10 @@
 /seMopathRecorder.py/1.1/Wed Apr  1 17:58:22 2009//
 /seParticleEffect.py/1.1/Wed Apr  1 17:58:22 2009//
 /seParticlePanel.py/1.1/Wed Apr  1 17:58:22 2009//
+/seParticles.py/1.2/Sat Jul 27 11:09:34 2013//
 /sePlacer.py/1.1/Wed Apr  1 17:58:22 2009//
 /seSceneGraphExplorer.py/1.1/Wed Apr  1 17:58:22 2009//
 /seSelection.py/1.1/Wed Apr  1 17:58:22 2009//
 /seSession.py/1.1/Wed Apr  1 17:58:22 2009//
 /seTree.py/1.1/Wed Apr  1 17:58:22 2009//
-/SideWindow.py/1.2/Fri Aug 23 20:48:23 2013//
-/sceneEditor.py/1.2/Fri Aug 23 20:48:23 2013//
-/seParticles.py/1.2/Fri Aug 23 20:48:23 2013//
 D

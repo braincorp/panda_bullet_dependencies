@@ -1,0 +1,21 @@
+/.cvsignore/1.1/Mon Aug 26 12:16:27 2013//
+/Sources.pp/1.1/Mon Aug 26 12:16:27 2013//
+/config_ffmpeg.cxx/1.1/Mon Aug 26 12:16:27 2013//
+/config_ffmpeg.h/1.1/Mon Aug 26 12:16:27 2013//
+/ffmpegAudio.I/1.1/Mon Aug 26 12:16:27 2013//
+/ffmpegAudio.cxx/1.1/Mon Aug 26 12:16:27 2013//
+/ffmpegAudio.h/1.1/Mon Aug 26 12:16:27 2013//
+/ffmpegAudioCursor.I/1.1/Mon Aug 26 12:16:27 2013//
+/ffmpegAudioCursor.cxx/1.1/Mon Aug 26 12:16:27 2013//
+/ffmpegAudioCursor.h/1.1/Mon Aug 26 12:16:27 2013//
+/ffmpegVideo.I/1.1/Mon Aug 26 12:16:27 2013//
+/ffmpegVideo.cxx/1.1/Mon Aug 26 12:16:27 2013//
+/ffmpegVideo.h/1.1/Mon Aug 26 12:16:27 2013//
+/ffmpegVideoCursor.I/1.1/Mon Aug 26 12:16:27 2013//
+/ffmpegVideoCursor.cxx/1.1/Mon Aug 26 12:16:28 2013//
+/ffmpegVideoCursor.h/1.1/Mon Aug 26 12:16:28 2013//
+/ffmpegVirtualFile.I/1.1/Mon Aug 26 12:16:28 2013//
+/ffmpegVirtualFile.cxx/1.1/Mon Aug 26 12:16:28 2013//
+/ffmpegVirtualFile.h/1.1/Mon Aug 26 12:16:28 2013//
+/p3ffmpeg_composite1.cxx/1.1/Mon Aug 26 12:16:28 2013//
+D

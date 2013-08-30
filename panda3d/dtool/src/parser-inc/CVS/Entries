@@ -13,10 +13,11 @@
 /NxExtended.h/1.2/Mon Dec 28 11:33:36 2009//
 /NxPhysics.h/1.5/Mon Apr 30 22:45:12 2012//
 /NxStream.h/1.2/Mon Dec 28 11:33:36 2009//
+/OVR.h/1.1/Sun Aug 25 17:18:02 2013//
 /OpenGLRenderer.h/1.2/Sat Oct  9 00:16:08 2010//
 /Python.h/1.5/Sun Feb 14 18:05:11 2010//
 /RenderInterface.h/1.1/Fri Jan  6 12:28:33 2012//
-/Sources.pp/1.57/Thu Oct 25 22:03:05 2012//
+/Sources.pp/1.58/Sun Aug 25 17:18:02 2013//
 /StdVector/1.1/Mon Dec 19 15:14:29 2011//
 /WebCore.h/1.1/Tue Dec 29 23:22:09 2009//
 /WebView.h/1.1/Tue Dec 29 23:22:09 2009//
@@ -28,6 +29,7 @@
 /avformat.h/1.1/Sun May 14 22:14:13 2006//
 /avio.h/1.4/Wed Jun 29 20:32:58 2011//
 /avutil.h/1.1/Sun May 14 22:14:14 2006//
+/btBulletDynamicsCommon.h/1.10/Wed Aug 14 23:32:20 2013//
 /cg.h/1.2/Wed May 28 18:37:26 2008//
 /cgGL.h/1.2/Wed May 28 18:37:26 2008//
 /collision_trimesh.h/1.1/Tue Jan 30 06:04:00 2007//
@@ -82,6 +84,7 @@
 /mmsystem.h/1.4/Wed May 28 18:37:26 2008//
 /nurbs.hh/1.4/Wed May 28 18:59:43 2008//
 /ode.h/1.4/Tue May 25 21:12:44 2010//
+/os_types.h/1.1/Sun Aug 25 17:30:29 2013//
 /pair/1.4/Wed May 28 18:59:43 2008//
 /pem.h/1.1/Wed Mar  7 21:57:16 2007//
 /phyexp.h/1.2/Wed May 28 18:37:26 2008//
@@ -114,6 +117,8 @@
 /tinyxml.h/1.1/Tue Oct 13 21:28:18 2009//
 /ucontext.h/1.2/Wed May 28 18:37:26 2008//
 /vector/1.4/Wed May 28 18:59:43 2008//
+/vorbisfile.h/1.1/Sun Aug 25 17:30:29 2013//
+/windows.h/1.14/Wed Aug 21 06:44:41 2013//
 /winsock2.h/1.2/Tue Nov 14 04:11:50 2006//
 /x509.h/1.1/Mon Jan  3 21:50:28 2005//
 /x509v3.h/1.1/Fri Oct  9 19:03:00 2009//
@@ -124,5 +129,5 @@ D/libavformat////
 D/libavutil////
 D/libswscale////
 D/ode////
-/btBulletDynamicsCommon.h/1.10/Fri Aug 23 20:47:05 2013//
-/windows.h/1.14/Fri Aug 23 20:47:05 2013//
+D/ogg////
+D/vorbis////
